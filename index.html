@@ -563,6 +563,11 @@
         width: min(940px, 100%);
       }
 
+      .chat-message.processing .chat-bubble {
+        border-style: dashed;
+        background: #f8fafc;
+      }
+
       .chat-bubble {
         border: 1px solid var(--line);
         background: #ffffff;
@@ -579,6 +584,48 @@
 
       .chat-answer {
         margin: 0 0 10px;
+      }
+
+      .processing-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+      }
+
+      .typing-dots {
+        display: inline-flex;
+        gap: 3px;
+      }
+
+      .typing-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--accent);
+        animation: typingPulse 1s infinite ease-in-out;
+      }
+
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes typingPulse {
+        0%,
+        80%,
+        100% {
+          opacity: 0.35;
+          transform: translateY(0);
+        }
+
+        40% {
+          opacity: 1;
+          transform: translateY(-3px);
+        }
       }
 
       .chat-result {
@@ -1155,6 +1202,7 @@
       let schemaFilter = "";
       let activeView = "schema";
       let chatStarted = false;
+      let isProcessing = false;
 
       function escapeHtml(value) {
         return String(value)
@@ -1953,6 +2001,24 @@ ORDER BY month`,
         return node;
       }
 
+      function setComposerBusy(isBusy) {
+        isProcessing = isBusy;
+        const input = document.getElementById("question");
+        const button = document.getElementById("runBtn");
+        document.getElementById("chatMessages").setAttribute("aria-busy", String(isBusy));
+        input.disabled = isBusy;
+        button.disabled = isBusy;
+        button.textContent = isBusy ? "Processing..." : "Run Query";
+      }
+
+      function renderProcessingMessage(question) {
+        return `<div class="processing-line">
+          <span>Processing query</span>
+          <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+        </div>
+        <p class="note">Compiling SQL and scanning demo rows for: ${escapeHtml(question)}</p>`;
+      }
+
       function renderChatResult(result, latency) {
         const tableButtons = result.tablesUsed.length ? `<div class="lineage">${renderTableButtons(result.tablesUsed)}</div>` : "";
         const chart = renderChart(result.rows);
@@ -1986,19 +2052,36 @@ ORDER BY month`,
           <p class="note">Example: show customers in South just show customer_id</p>`);
       }
 
-      function run(questionOverride = null) {
-        initChat();
-        const started = performance.now();
+      function selectExampleQuery(question) {
         const input = document.getElementById("question");
-        const question = (questionOverride || input.value).trim();
+        input.value = question;
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+
+      async function run() {
+        if (isProcessing) return;
+        initChat();
+        const input = document.getElementById("question");
+        const question = input.value.trim();
         if (!question) return;
         appendChatMessage("user", escapeHtml(question));
-        const result = compile(question);
-        const latency = Math.max(0.1, performance.now() - started);
-        const message = appendChatMessage("assistant", renderChatResult(result, latency));
-        attachOpenTableButtons(message);
         input.value = "";
-        input.focus();
+        const processing = appendChatMessage("assistant processing", renderProcessingMessage(question));
+        setComposerBusy(true);
+
+        window.setTimeout(() => {
+          const started = performance.now();
+          const result = compile(question);
+          const latency = Math.max(0.1, performance.now() - started);
+          processing.className = "chat-message assistant";
+          processing.querySelector(".chat-bubble").innerHTML = renderChatResult(result, latency);
+          attachOpenTableButtons(processing);
+          setComposerBusy(false);
+          input.focus();
+          const root = document.getElementById("chatMessages");
+          root.scrollTop = root.scrollHeight;
+        }, 650);
       }
 
       function renderExamples() {
@@ -2010,7 +2093,7 @@ ORDER BY month`,
           button.type = "button";
           button.textContent = example;
           button.addEventListener("click", () => {
-            run(example);
+            selectExampleQuery(example);
           });
           root.appendChild(button);
         });
@@ -2137,6 +2220,12 @@ ORDER BY month`,
       document.getElementById("chatForm").addEventListener("submit", (event) => {
         event.preventDefault();
         run();
+      });
+      document.getElementById("question").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          run();
+        }
       });
       window.addEventListener("hashchange", () => setView(viewFromHash(), false));
 
