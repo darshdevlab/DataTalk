@@ -246,11 +246,13 @@
 
       .map-stage {
         position: relative;
-        min-height: 420px;
-        overflow: hidden;
+        width: min(100%, 1000px);
+        height: 520px;
+        margin: 0 auto;
+        overflow: auto;
         border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fbfdff;
+        border-radius: 6px;
+        background: #ffffff;
       }
 
       .map-stage svg {
@@ -263,88 +265,118 @@
 
       .map-line {
         fill: none;
-        stroke: #7a93a8;
-        stroke-width: 2.2;
+        stroke: #667085;
+        stroke-width: 1.4;
       }
 
       .map-line.faint {
-        stroke: #c2cfda;
+        stroke: #c6d0dc;
       }
 
       .map-label {
-        fill: #475467;
-        font-size: 12px;
+        fill: #344054;
+        font-size: 11px;
         font-weight: 650;
       }
 
       .map-node {
         position: absolute;
-        width: 192px;
-        min-height: 88px;
-        display: grid;
-        gap: 4px;
-        align-content: start;
-        border: 1px solid #b9c8d6;
+        width: 184px;
+        min-height: 136px;
+        display: block;
+        overflow: hidden;
+        border: 1px solid #7b8794;
         background: #ffffff;
         color: var(--ink);
-        border-radius: 8px;
-        padding: 10px 12px;
+        border-radius: 3px;
+        padding: 0;
         text-align: left;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+        box-shadow: none;
       }
 
       .map-node[aria-pressed="true"] {
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14), 0 8px 24px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14);
       }
 
-      .map-role {
-        color: var(--accent-strong);
+      .erd-head {
+        display: block;
+        min-height: 28px;
+        background: #83b6dc;
+        color: #102a43;
+        border-bottom: 1px solid #6f9fc2;
+        padding: 5px 8px;
         font-size: 11px;
         font-weight: 750;
         letter-spacing: 0;
-        text-transform: uppercase;
+        text-transform: lowercase;
       }
 
-      .map-table {
+      .erd-title {
+        display: block;
+        padding: 7px 8px 4px;
         font-weight: 800;
+        font-size: 14px;
         overflow-wrap: anywhere;
       }
 
-      .map-fields {
+      .erd-field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        border-top: 1px solid #e5e7eb;
+        padding: 4px 8px;
         color: var(--muted);
-        font-size: 12px;
-        line-height: 1.35;
+        font-size: 11px;
+        line-height: 1.25;
+      }
+
+      .erd-field strong {
+        color: var(--ink);
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+
+      .erd-type {
+        color: #667085;
+      }
+
+      .erd-count {
+        display: block;
+        border-top: 1px solid #e5e7eb;
+        padding: 5px 8px;
+        color: #475467;
+        font-size: 11px;
       }
 
       .map-node[data-table="sales_orders"] {
-        left: calc(50% - 96px);
-        top: 38px;
+        left: 410px;
+        top: 42px;
       }
 
       .map-node[data-table="customers"] {
         left: 42px;
-        top: 168px;
+        top: 205px;
       }
 
       .map-node[data-table="products"] {
-        right: 42px;
-        top: 168px;
+        left: 774px;
+        top: 205px;
       }
 
       .map-node[data-table="support_tickets"] {
-        left: calc(50% - 96px);
-        top: 245px;
+        left: 410px;
+        top: 284px;
       }
 
       .map-node[data-table="invoices"] {
-        left: 76px;
-        bottom: 28px;
+        left: 120px;
+        top: 382px;
       }
 
       .map-node[data-table="employees"] {
-        right: 76px;
-        bottom: 28px;
+        left: 698px;
+        top: 382px;
       }
 
       .map-legend {
@@ -481,6 +513,108 @@
         align-items: start;
       }
 
+      .chat-app {
+        height: min(760px, calc(100vh - 150px));
+        min-height: 560px;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .chat-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+
+      .chat-title {
+        display: grid;
+        gap: 3px;
+      }
+
+      .chat-messages {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px;
+        display: grid;
+        align-content: start;
+        gap: 16px;
+        background: #fbfdff;
+      }
+
+      .chat-message {
+        display: grid;
+        gap: 8px;
+        max-width: min(940px, 100%);
+      }
+
+      .chat-message.user {
+        justify-self: end;
+        max-width: min(720px, 82%);
+      }
+
+      .chat-message.assistant {
+        justify-self: start;
+        width: min(940px, 100%);
+      }
+
+      .chat-bubble {
+        border: 1px solid var(--line);
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 12px;
+        line-height: 1.45;
+      }
+
+      .chat-message.user .chat-bubble {
+        background: var(--accent-strong);
+        border-color: var(--accent-strong);
+        color: #ffffff;
+      }
+
+      .chat-answer {
+        margin: 0 0 10px;
+      }
+
+      .chat-result {
+        display: grid;
+        gap: 12px;
+      }
+
+      .chat-result-block {
+        display: grid;
+        gap: 8px;
+      }
+
+      .chat-result-title {
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .chat-examples {
+        flex: 0 0 auto;
+        max-height: 132px;
+        overflow: auto;
+        border-top: 1px solid var(--line);
+        padding: 12px 16px 0;
+        margin: 0;
+      }
+
+      .chat-composer {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        border-top: 1px solid var(--line);
+        padding: 12px 16px 16px;
+        background: #ffffff;
+      }
+
       .answer {
         margin: 0;
         line-height: 1.5;
@@ -610,7 +744,8 @@
         .querybar,
         .schema-layout,
         .statusline,
-        .toolbar {
+        .toolbar,
+        .chat-composer {
           grid-template-columns: 1fr;
         }
 
@@ -629,7 +764,8 @@
         }
 
         .map-stage {
-          min-height: auto;
+          width: 100%;
+          height: auto;
           display: grid;
           grid-template-columns: 1fr;
           gap: 10px;
@@ -649,6 +785,10 @@
         .map-node[data-table="employees"] {
           position: static;
           width: 100%;
+        }
+
+        .chat-message.user {
+          max-width: 100%;
         }
       }
     </style>
@@ -673,7 +813,7 @@
     <main class="wrap">
       <div class="tabs" aria-label="DataTalk pages">
         <button id="schemaTab" class="tab" type="button" aria-pressed="true">Schema & Data</button>
-        <button id="nlpTab" class="tab" type="button" aria-pressed="false">NLP Query</button>
+        <button id="nlpTab" class="tab" type="button" aria-pressed="false">Data Chat</button>
       </div>
 
       <div class="statusline" aria-label="Demo status">
@@ -748,50 +888,23 @@
       </div>
 
       <div id="nlpView" class="view" hidden>
-        <div class="querybar">
-          <input id="question" aria-label="Question" value="Show revenue by region for 2025" />
-          <button id="runBtn" type="button">Run Query</button>
-        </div>
-
-        <div class="examples" id="examples"></div>
-
-        <div class="grid">
-          <div>
-            <section>
-              <div class="section-head">
-                <div class="section-title">
-                  <h2>Answer</h2>
-                  <span id="lineageTitle" class="caption"></span>
-                </div>
-                <div id="lineage" class="lineage" aria-label="Tables used"></div>
-              </div>
-              <div id="meta" class="meta"></div>
-              <p id="answer" class="answer"></p>
-              <h3>Source Rows</h3>
-              <div id="rows" class="tablewrap"></div>
-            </section>
-
-            <section>
-              <h2>Visual Check</h2>
-              <div id="chart" class="chart"></div>
-              <p class="note">This public page uses embedded demo rows. The trained T5 checkpoint stays out of GitHub; a separate model API can be connected later without exposing tokens.</p>
-            </section>
+        <section class="chat-app">
+          <div class="chat-head">
+            <div class="chat-title">
+              <h2>DataTalk Chat</h2>
+              <span class="caption">Ask over the visible demo schema.</span>
+            </div>
+            <span class="pill warn">mode: static compiler</span>
           </div>
 
-          <div>
-            <section id="sql">
-              <h2>Compiled SQL</h2>
-              <pre id="sqlOut"></pre>
-            </section>
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <div class="examples chat-examples" id="examples"></div>
 
-            <section>
-              <h2>Deployment Boundary</h2>
-              <p class="note">
-                GitHub Pages hosts this static UI. No API keys, write tokens, train data, validation data, SQLite artifact, or model weights are shipped in the browser.
-              </p>
-            </section>
-          </div>
-        </div>
+          <form id="chatForm" class="chat-composer">
+            <input id="question" aria-label="Question" placeholder="Ask about customers, tickets, invoices, products, sales, or employees" autocomplete="off" />
+            <button id="runBtn" type="submit">Run Query</button>
+          </form>
+        </section>
       </div>
     </main>
 
@@ -998,11 +1111,11 @@
       ];
 
       const schemaMapEdges = [
-        { from: "sales_orders", to: "customers", label: "customer_id", path: "M 445 82 C 330 105 245 145 190 178", labelX: 310, labelY: 112 },
-        { from: "sales_orders", to: "products", label: "product_id", path: "M 555 82 C 670 105 755 145 810 178", labelX: 650, labelY: 112 },
-        { from: "support_tickets", to: "customers", label: "customer_id", path: "M 445 286 C 330 268 250 225 190 216", labelX: 292, labelY: 266 },
-        { from: "support_tickets", to: "products", label: "product_id", path: "M 555 286 C 670 268 750 225 810 216", labelX: 645, labelY: 266 },
-        { from: "invoices", to: "customers", label: "customer_id", path: "M 175 338 C 150 302 150 260 172 225", labelX: 80, labelY: 292 }
+        { from: "sales_orders", to: "customers", label: "customer_id", path: "M 410 112 H 292 V 250 H 226", labelX: 302, labelY: 103 },
+        { from: "sales_orders", to: "products", label: "product_id", path: "M 594 112 H 706 V 250 H 774", labelX: 646, labelY: 103 },
+        { from: "support_tickets", to: "customers", label: "customer_id", path: "M 410 342 H 292 V 272 H 226", labelX: 300, labelY: 336 },
+        { from: "support_tickets", to: "products", label: "product_id", path: "M 594 342 H 706 V 272 H 774", labelX: 646, labelY: 336 },
+        { from: "invoices", to: "customers", label: "customer_id", path: "M 212 382 V 336 H 134 V 320", labelX: 118, labelY: 368 }
       ];
 
       const glossary = [
@@ -1041,6 +1154,7 @@
       let activeTable = "sales_orders";
       let schemaFilter = "";
       let activeView = "schema";
+      let chatStarted = false;
 
       function escapeHtml(value) {
         return String(value)
@@ -1819,8 +1933,8 @@ ORDER BY month`,
         renderSchema();
       }
 
-      function attachOpenTableButtons() {
-        document.querySelectorAll("[data-open-table]").forEach((button) => {
+      function attachOpenTableButtons(scope = document) {
+        scope.querySelectorAll("[data-open-table]").forEach((button) => {
           button.addEventListener("click", () => {
             activeTable = button.dataset.openTable;
             schemaFilter = "";
@@ -1829,24 +1943,62 @@ ORDER BY month`,
         });
       }
 
-      function run() {
+      function appendChatMessage(role, html) {
+        const root = document.getElementById("chatMessages");
+        const node = document.createElement("div");
+        node.className = `chat-message ${role}`;
+        node.innerHTML = `<div class="chat-bubble">${html}</div>`;
+        root.appendChild(node);
+        root.scrollTop = root.scrollHeight;
+        return node;
+      }
+
+      function renderChatResult(result, latency) {
+        const tableButtons = result.tablesUsed.length ? `<div class="lineage">${renderTableButtons(result.tablesUsed)}</div>` : "";
+        const chart = renderChart(result.rows);
+        return `<div class="chat-result">
+          <p class="chat-answer">${escapeHtml(result.answer)}</p>
+          <div class="meta">
+            <span class="pill good">route: ${escapeHtml(result.route)}</span>
+            <span class="pill good">confidence: ${result.confidence}</span>
+            <span class="pill">latency: ${latency.toFixed(1)} ms</span>
+          </div>
+          ${tableButtons}
+          <div class="chat-result-block">
+            <span class="chat-result-title">Compiled SQL</span>
+            <pre>${escapeHtml(result.sql)}</pre>
+          </div>
+          <div class="chat-result-block">
+            <span class="chat-result-title">Source Rows</span>
+            <div class="tablewrap">${renderRows(result.rows)}</div>
+          </div>
+          <div class="chat-result-block">
+            <span class="chat-result-title">Visual Check</span>
+            <div class="chart">${chart}</div>
+          </div>
+        </div>`;
+      }
+
+      function initChat() {
+        if (chatStarted) return;
+        chatStarted = true;
+        appendChatMessage("assistant", `<p class="chat-answer">Ask me about customers, tickets, invoices, products, sales, or employees.</p>
+          <p class="note">Example: show customers in South just show customer_id</p>`);
+      }
+
+      function run(questionOverride = null) {
+        initChat();
         const started = performance.now();
-        const question = document.getElementById("question").value.trim() || "Show monthly revenue trend for 2025";
+        const input = document.getElementById("question");
+        const question = (questionOverride || input.value).trim();
+        if (!question) return;
+        appendChatMessage("user", escapeHtml(question));
         const result = compile(question);
         const latency = Math.max(0.1, performance.now() - started);
-        document.getElementById("answer").textContent = result.answer;
-        document.getElementById("sqlOut").textContent = result.sql;
-        document.getElementById("rows").innerHTML = renderRows(result.rows);
-        document.getElementById("chart").innerHTML = renderChart(result.rows);
-        document.getElementById("lineageTitle").textContent = `Period: ${result.period}`;
-        document.getElementById("lineage").innerHTML = renderTableButtons(result.tablesUsed);
-        document.getElementById("meta").innerHTML = [
-          `<span class="pill good">route: ${escapeHtml(result.route)}</span>`,
-          `<span class="pill good">confidence: ${result.confidence}</span>`,
-          `<span class="pill">latency: ${latency.toFixed(1)} ms</span>`,
-          `<span class="pill warn">mode: static compiler</span>`
-        ].join("");
-        attachOpenTableButtons();
+        const message = appendChatMessage("assistant", renderChatResult(result, latency));
+        attachOpenTableButtons(message);
+        input.value = "";
+        input.focus();
       }
 
       function renderExamples() {
@@ -1858,8 +2010,7 @@ ORDER BY month`,
           button.type = "button";
           button.textContent = example;
           button.addEventListener("click", () => {
-            document.getElementById("question").value = example;
-            run();
+            run(example);
           });
           root.appendChild(button);
         });
@@ -1873,25 +2024,26 @@ ORDER BY month`,
         const edgeMarkup = schemaMapEdges.map((edge) => {
           const isActive = edge.from === activeTable || edge.to === activeTable;
           const lineClass = isActive ? "map-line" : "map-line faint";
-          return `<path class="${lineClass}" d="${edge.path}" marker-end="url(#mapArrow)" />
+          return `<path class="${lineClass}" d="${edge.path}" />
             <text class="map-label" x="${edge.labelX}" y="${edge.labelY}">${escapeHtml(edge.label)}</text>`;
         }).join("");
         const nodesMarkup = schemaMapNodes.map((node) => {
           const rowCount = tables[node.table]?.length || 0;
+          const table = schema.find((item) => item.name === node.table);
+          const fields = (table?.columns || []).slice(0, 5).map(([column, type, key]) => `
+            <span class="erd-field">
+              <strong>${escapeHtml(column)}${key ? ` ${escapeHtml(key)}` : ""}</strong>
+              <span class="erd-type">${escapeHtml(type)}</span>
+            </span>`).join("");
           return `<button class="map-node" type="button" data-table="${escapeHtml(node.table)}" data-map-table="${escapeHtml(node.table)}" aria-pressed="${node.table === activeTable}">
-            <span class="map-role">${escapeHtml(node.role)}</span>
-            <span class="map-table">${escapeHtml(node.table)}</span>
-            <span class="map-fields">${escapeHtml(node.fields)}</span>
-            <span class="count-badge">${rowCount} rows</span>
+            <span class="erd-head">${escapeHtml(node.role)}</span>
+            <span class="erd-title">${escapeHtml(node.table)}</span>
+            ${fields}
+            <span class="erd-count">${rowCount} rows</span>
           </button>`;
         }).join("");
 
-        document.getElementById("schemaMap").innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <marker id="mapArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a93a8"></path>
-            </marker>
-          </defs>
+        document.getElementById("schemaMap").innerHTML = `<svg viewBox="0 0 1000 520" aria-hidden="true">
           ${edgeMarkup}
         </svg>${nodesMarkup}`;
 
@@ -1973,7 +2125,7 @@ ORDER BY month`,
         document.getElementById("schemaTab").setAttribute("aria-pressed", String(view === "schema"));
         document.getElementById("nlpTab").setAttribute("aria-pressed", String(view === "nlp"));
         if (view === "schema") renderSchema();
-        if (view === "nlp") run();
+        if (view === "nlp") initChat();
         const expectedHash = view === "nlp" ? "#nlp" : "#schema";
         if (syncHash && location.hash !== expectedHash) {
           history.pushState(null, "", expectedHash);
@@ -1982,15 +2134,14 @@ ORDER BY month`,
 
       document.getElementById("schemaTab").addEventListener("click", () => setView("schema"));
       document.getElementById("nlpTab").addEventListener("click", () => setView("nlp"));
-      document.getElementById("runBtn").addEventListener("click", run);
-      document.getElementById("question").addEventListener("keydown", (event) => {
-        if (event.key === "Enter") run();
+      document.getElementById("chatForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        run();
       });
       window.addEventListener("hashchange", () => setView(viewFromHash(), false));
 
       renderExamples();
       renderSchema();
-      run();
       setView(viewFromHash(), false);
     </script>
   </body>

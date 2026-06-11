@@ -55,11 +55,11 @@ http://127.0.0.1:8765
 ## GitHub Pages Demo
 
 The repository also includes a static GitHub Pages demo in `index.html`. The
-first page is a schema/data explorer with an HLD relationship map where users
-can inspect tables, columns, relationships, glossary terms, and sample rows. The
-second page runs the supported intent compiler in browser JavaScript using the
-same embedded demo rows, so there are no browser secrets and no backend token is
-required.
+first page is a schema/data explorer with an ERD-style relationship map where
+users can inspect tables, columns, relationships, glossary terms, and sample
+rows. The second page is a chat-style query interface that runs the supported
+intent compiler in browser JavaScript using the same embedded demo rows, so
+there are no browser secrets and no backend token is required.
 
 Live demo:
 
