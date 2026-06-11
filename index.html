@@ -145,24 +145,63 @@
         font-size: 13px;
       }
 
+      .app-shell {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+
+      .side-nav {
+        position: sticky;
+        top: 16px;
+        display: grid;
+        gap: 10px;
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .side-nav-title {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
       .tabs {
-        display: flex;
-        gap: 6px;
-        padding: 0 0 14px;
+        display: grid;
+        gap: 8px;
       }
 
       .tab {
-        min-height: 38px;
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
         background: #ffffff;
         color: #334155;
         border-color: var(--line-strong);
         padding: 0 12px;
+        text-align: left;
+      }
+
+      .tab:hover {
+        border-color: var(--accent);
+        color: var(--accent-strong);
       }
 
       .tab[aria-pressed="true"] {
         background: var(--accent-strong);
         color: #ffffff;
         border-color: var(--accent-strong);
+      }
+
+      .content-area {
+        min-width: 0;
       }
 
       main {
@@ -810,6 +849,23 @@
       }
 
       @media (max-width: 940px) {
+        .app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .side-nav {
+          position: static;
+        }
+
+        .tabs {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tab {
+          justify-content: center;
+          text-align: center;
+        }
+
         .grid,
         .querybar,
         .schema-layout,
@@ -881,19 +937,24 @@
     </header>
 
     <main class="wrap">
-      <div class="tabs" aria-label="DataTalk pages">
-        <button id="schemaTab" class="tab" type="button" aria-pressed="true">Schema & Data</button>
-        <button id="nlpTab" class="tab" type="button" aria-pressed="false">Data Chat</button>
-      </div>
+      <div class="app-shell">
+        <aside class="side-nav" aria-label="DataTalk pages">
+          <span class="side-nav-title">Workspace</span>
+          <div class="tabs">
+            <button id="schemaTab" class="tab" type="button" aria-pressed="true">Schema & Data</button>
+            <button id="nlpTab" class="tab" type="button" aria-pressed="false">Data Chat</button>
+          </div>
+        </aside>
 
-      <div class="statusline" aria-label="Demo status">
-        <div class="metric"><strong id="metricTables">6</strong><span>demo tables</span></div>
-        <div class="metric"><strong id="metricRows">75</strong><span>visible sample rows</span></div>
-        <div class="metric"><strong>8</strong><span>supported query families</span></div>
-        <div class="metric"><strong>0</strong><span>browser secrets</span></div>
-      </div>
+        <div class="content-area">
+          <div class="statusline" aria-label="Demo status">
+            <div class="metric"><strong id="metricTables">6</strong><span>demo tables</span></div>
+            <div class="metric"><strong id="metricRows">75</strong><span>visible sample rows</span></div>
+            <div class="metric"><strong>8</strong><span>supported query families</span></div>
+            <div class="metric"><strong>0</strong><span>browser secrets</span></div>
+          </div>
 
-      <div id="schemaView" class="view">
+          <div id="schemaView" class="view">
         <section>
           <div class="section-head">
             <div class="section-title">
@@ -957,27 +1018,29 @@
         </section>
       </div>
 
-      <div id="nlpView" class="view" hidden>
-        <section class="chat-app">
-          <div class="chat-head">
-            <div class="chat-title">
-              <h2>DataTalk Chat</h2>
-              <span class="caption">Ask over the visible demo schema.</span>
-            </div>
-            <div class="chat-actions">
-              <button id="clearChatBtn" class="clear-chat-button" type="button">Clear Chat</button>
-              <span class="pill warn">mode: static compiler</span>
-            </div>
+          <div id="nlpView" class="view" hidden>
+            <section class="chat-app">
+              <div class="chat-head">
+                <div class="chat-title">
+                  <h2>DataTalk Chat</h2>
+                  <span class="caption">Ask over the visible demo schema.</span>
+                </div>
+                <div class="chat-actions">
+                  <button id="clearChatBtn" class="clear-chat-button" type="button">Clear Chat</button>
+                  <span class="pill warn">mode: static compiler</span>
+                </div>
+              </div>
+
+              <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+              <div class="examples chat-examples" id="examples"></div>
+
+              <form id="chatForm" class="chat-composer">
+                <input id="question" aria-label="Question" placeholder="Ask about customers, tickets, invoices, products, sales, or employees" autocomplete="off" />
+                <button id="runBtn" type="submit">Run Query</button>
+              </form>
+            </section>
           </div>
-
-          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-          <div class="examples chat-examples" id="examples"></div>
-
-          <form id="chatForm" class="chat-composer">
-            <input id="question" aria-label="Question" placeholder="Ask about customers, tickets, invoices, products, sales, or employees" autocomplete="off" />
-            <button id="runBtn" type="submit">Run Query</button>
-          </form>
-        </section>
+        </div>
       </div>
     </main>
 
