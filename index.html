@@ -1263,9 +1263,44 @@
         return filters;
       }
 
+      function rawTableColumns(tableName) {
+        return schema.find((table) => table.name === tableName)?.columns.map(([column]) => column) || [];
+      }
+
+      function columnRequested(question, column) {
+        const q = normalize(question);
+        const spaced = column.replaceAll("_", " ");
+        return hasWord(q, column.toLowerCase()) || hasWord(q, spaced.toLowerCase());
+      }
+
+      function requestedColumns(question, tableName) {
+        const columns = rawTableColumns(tableName).filter((column) => columnRequested(question, column));
+        return columns.length ? columns : null;
+      }
+
+      function projectRow(row, columns) {
+        return Object.fromEntries(columns.map((column) => [column, row[column]]));
+      }
+
+      function selectExpression(tableName, column) {
+        const alias = {
+          customers: "c",
+          products: "p",
+          sales_orders: "s",
+          support_tickets: "t",
+          invoices: "i",
+          employees: "e"
+        }[tableName];
+        return `${alias}.${column}`;
+      }
+
       function tableRows(tableName, question) {
         const filters = buildTableFilters(question, tableName);
         const rawRows = (tables[tableName] || []).filter((row) => filters.every((filter) => filter.test(row)));
+        const columns = requestedColumns(question, tableName);
+        if (columns) {
+          return { rows: rawRows.map((row) => projectRow(row, columns)), filters, columns };
+        }
         const rows = rawRows.map((row) => {
           if (tableName === "sales_orders") {
             const customer = customerById[row.customer_id];
@@ -1308,7 +1343,7 @@
           }
           return row;
         });
-        return { rows, filters };
+        return { rows, filters, columns };
       }
 
       function tableFromSql(tableName) {
@@ -1332,7 +1367,11 @@ JOIN customers c ON c.customer_id = i.customer_id`;
         return "";
       }
 
-      function tableSelectSql(tableName) {
+      function tableSelectSql(tableName, columns = null) {
+        if (columns?.length) {
+          return `SELECT ${columns.map((column) => selectExpression(tableName, column)).join(", ")}
+${tableFromSql(tableName)}`;
+        }
         if (tableName === "sales_orders") {
           return `SELECT s.order_id, s.order_date, c.customer_name, p.product_name,
        s.region, s.channel, s.quantity,
@@ -1354,9 +1393,9 @@ ${tableFromSql(tableName)}`;
         return "";
       }
 
-      function tableSql(tableName, filters) {
+      function tableSql(tableName, filters, columns = null) {
         const where = filters.length ? `\nWHERE ${filters.map((filter) => filterSql(tableName, filter)).join("\n  AND ")}` : "";
-        return `${tableSelectSql(tableName)}${where}\nLIMIT 25`;
+        return `${tableSelectSql(tableName, columns)}${where}\nLIMIT 25`;
       }
 
       function groupField(question, tableName) {
@@ -1439,7 +1478,7 @@ ORDER BY row_count DESC`,
           rows: result.rows.slice(0, 25),
           tablesUsed: [tableName],
           period: hasDateHint(question) ? buildTableFilters(question, tableName).find((filter) => filter.kind === "date")?.label || "filtered demo rows" : "all visible demo rows",
-          sql: tableSql(tableName, result.filters),
+          sql: tableSql(tableName, result.filters, result.columns),
           answer: result.rows.length ? `Returned ${result.rows.length} matching ${tableName} row(s).` : `No matching ${tableName} rows.`
         };
       }
