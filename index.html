@@ -1230,6 +1230,7 @@
       let chatStarted = false;
       let isProcessing = false;
       let pendingQueryTimer = null;
+      const CHAT_STORAGE_KEY = "datatalk.chat.v1";
 
       function escapeHtml(value) {
         return String(value)
@@ -2018,13 +2019,62 @@ ORDER BY month`,
         });
       }
 
-      function appendChatMessage(role, html) {
+      function getChatStorage() {
+        try {
+          return window.localStorage;
+        } catch {
+          return null;
+        }
+      }
+
+      function saveChatHistory() {
+        const storage = getChatStorage();
+        if (!storage) return;
+        const root = document.getElementById("chatMessages");
+        const messages = Array.from(root.querySelectorAll(".chat-message"))
+          .filter((node) => node.dataset.persist === "true" && !node.classList.contains("processing"))
+          .map((node) => ({
+            role: node.dataset.role === "user" ? "user" : "assistant",
+            html: node.querySelector(".chat-bubble")?.innerHTML || ""
+          }))
+          .filter((message) => message.html);
+        storage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      }
+
+      function loadChatHistory() {
+        const storage = getChatStorage();
+        if (!storage) return [];
+        try {
+          const parsed = JSON.parse(storage.getItem(CHAT_STORAGE_KEY) || "[]");
+          if (!Array.isArray(parsed)) return [];
+          return parsed.filter((message) =>
+            (message.role === "user" || message.role === "assistant") &&
+            typeof message.html === "string" &&
+            message.html.trim()
+          );
+        } catch {
+          storage.removeItem(CHAT_STORAGE_KEY);
+          return [];
+        }
+      }
+
+      function clearStoredChatHistory() {
+        const storage = getChatStorage();
+        if (storage) storage.removeItem(CHAT_STORAGE_KEY);
+      }
+
+      function appendChatMessage(role, html, options = {}) {
+        const persist = options.persist ?? true;
+        const shouldSave = options.save ?? true;
         const root = document.getElementById("chatMessages");
         const node = document.createElement("div");
         node.className = `chat-message ${role}`;
+        node.dataset.role = role.includes("user") ? "user" : "assistant";
+        node.dataset.persist = String(persist);
         node.innerHTML = `<div class="chat-bubble">${html}</div>`;
         root.appendChild(node);
         root.scrollTop = root.scrollHeight;
+        if (shouldSave) saveChatHistory();
         return node;
       }
 
@@ -2074,9 +2124,21 @@ ORDER BY month`,
 
       function initChat() {
         if (chatStarted) return;
+        const restoredMessages = loadChatHistory();
+        if (restoredMessages.length) {
+          const root = document.getElementById("chatMessages");
+          root.innerHTML = "";
+          restoredMessages.forEach((message) => {
+            appendChatMessage(message.role, message.html, { persist: true, save: false });
+          });
+          attachOpenTableButtons(root);
+          chatStarted = true;
+          root.scrollTop = root.scrollHeight;
+          return;
+        }
         chatStarted = true;
         appendChatMessage("assistant", `<p class="chat-answer">Ask me about customers, tickets, invoices, products, sales, or employees.</p>
-          <p class="note">Example: show customers in South just show customer_id</p>`);
+          <p class="note">Example: show customers in South just show customer_id</p>`, { persist: false, save: false });
       }
 
       function clearChat() {
@@ -2084,6 +2146,7 @@ ORDER BY month`,
           window.clearTimeout(pendingQueryTimer);
           pendingQueryTimer = null;
         }
+        clearStoredChatHistory();
         document.getElementById("chatMessages").innerHTML = "";
         chatStarted = false;
         setComposerBusy(false);
@@ -2106,9 +2169,9 @@ ORDER BY month`,
         const input = document.getElementById("question");
         const question = input.value.trim();
         if (!question) return;
-        appendChatMessage("user", escapeHtml(question));
+        appendChatMessage("user", escapeHtml(question), { persist: true, save: false });
         input.value = "";
-        const processing = appendChatMessage("assistant processing", renderProcessingMessage(question));
+        const processing = appendChatMessage("assistant processing", renderProcessingMessage(question), { persist: false, save: false });
         setComposerBusy(true);
 
         pendingQueryTimer = window.setTimeout(() => {
@@ -2117,12 +2180,14 @@ ORDER BY month`,
           const latency = Math.max(0.1, performance.now() - started);
           pendingQueryTimer = null;
           processing.className = "chat-message assistant";
+          processing.dataset.persist = "true";
           processing.querySelector(".chat-bubble").innerHTML = renderChatResult(result, latency);
           attachOpenTableButtons(processing);
           setComposerBusy(false);
           input.focus();
           const root = document.getElementById("chatMessages");
           root.scrollTop = root.scrollHeight;
+          saveChatHistory();
         }, 650);
       }
 
