@@ -6,7 +6,7 @@
     <title>DataTalk</title>
     <meta
       name="description"
-      content="DataTalk is a portfolio demo for natural-language company-data queries with compiled SQL, source rows, and latency."
+      content="DataTalk is a portfolio demo for natural-language company-data queries with schema browsing, compiled SQL, source rows, and latency."
     />
     <style>
       :root {
@@ -16,6 +16,8 @@
         --ink: #111827;
         --muted: #5b6472;
         --line: #d9e1ea;
+        --line-strong: #c7d2df;
+        --soft: #eef4f8;
         --accent: #176b87;
         --accent-strong: #0f4c5c;
         --orange: #f97316;
@@ -46,12 +48,12 @@
       }
 
       .wrap {
-        width: min(1180px, calc(100% - 32px));
+        width: min(1220px, calc(100% - 32px));
         margin: 0 auto;
       }
 
       .topbar {
-        min-height: 72px;
+        min-height: 74px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -103,26 +105,6 @@
         text-decoration: none;
       }
 
-      .linkbtn {
-        border: 1px solid var(--line);
-        background: white;
-        color: var(--accent-strong);
-        border-radius: 6px;
-        padding: 8px 10px;
-        font-size: 13px;
-      }
-
-      main {
-        padding: 22px 0 36px;
-      }
-
-      .querybar {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
-        margin-bottom: 14px;
-      }
-
       input,
       button,
       select {
@@ -150,34 +132,70 @@
         cursor: pointer;
       }
 
-      button.secondary {
+      button.secondary,
+      .linkbtn {
         background: #ffffff;
         color: var(--accent-strong);
-        border-color: #cbd5e1;
+        border: 1px solid #cbd5e1;
       }
 
-      .examples {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin: 0 0 18px;
-      }
-
-      .chip {
-        min-height: 34px;
-        padding: 0 10px;
-        background: #ffffff;
-        color: #344054;
-        border: 1px solid var(--line);
-        border-radius: 999px;
+      .linkbtn {
+        border-radius: 6px;
+        padding: 8px 10px;
         font-size: 13px;
       }
 
-      .grid {
+      .tabs {
+        display: flex;
+        gap: 6px;
+        padding: 0 0 14px;
+      }
+
+      .tab {
+        min-height: 38px;
+        background: #ffffff;
+        color: #334155;
+        border-color: var(--line-strong);
+        padding: 0 12px;
+      }
+
+      .tab[aria-pressed="true"] {
+        background: var(--accent-strong);
+        color: #ffffff;
+        border-color: var(--accent-strong);
+      }
+
+      main {
+        padding: 22px 0 36px;
+      }
+
+      .view[hidden] {
+        display: none;
+      }
+
+      .statusline {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(330px, 0.9fr);
-        gap: 14px;
-        align-items: start;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .metric {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        min-height: 72px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 12px;
       }
 
       section {
@@ -193,7 +211,7 @@
 
       h2 {
         font-size: 16px;
-        margin: 0 0 12px;
+        margin: 0;
         letter-spacing: 0;
       }
 
@@ -201,6 +219,152 @@
         margin: 18px 0 8px;
         font-size: 14px;
         letter-spacing: 0;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .section-title {
+        display: grid;
+        gap: 4px;
+      }
+
+      .caption {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .schema-layout {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+
+      .table-list {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fbfdff;
+      }
+
+      .table-option {
+        width: 100%;
+        min-height: 58px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+        background: transparent;
+        color: var(--ink);
+        text-align: left;
+        padding: 10px 12px;
+      }
+
+      .table-option:last-child {
+        border-bottom: 0;
+      }
+
+      .table-option[aria-selected="true"] {
+        background: var(--soft);
+        box-shadow: inset 4px 0 0 var(--accent);
+      }
+
+      .table-name {
+        display: block;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .table-meta {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .count-badge {
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: minmax(220px, 360px) auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 8px 0 10px;
+      }
+
+      .relation-strip,
+      .lineage {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .relation,
+      .table-chip,
+      .chip {
+        min-height: 34px;
+        padding: 0 10px;
+        background: #ffffff;
+        color: #344054;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .relation {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+      }
+
+      .table-chip {
+        color: var(--accent-strong);
+      }
+
+      .querybar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .examples {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 0 0 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(330px, 0.9fr);
+        gap: 14px;
+        align-items: start;
       }
 
       .answer {
@@ -269,6 +433,13 @@
 
       .tablewrap {
         overflow-x: auto;
+        border: 1px solid #edf2f7;
+        border-radius: 6px;
+      }
+
+      .tablewrap table th:first-child,
+      .tablewrap table td:first-child {
+        padding-left: 10px;
       }
 
       .chart {
@@ -278,10 +449,14 @@
 
       .barrow {
         display: grid;
-        grid-template-columns: 88px minmax(120px, 1fr) 82px;
+        grid-template-columns: 118px minmax(120px, 1fr) 92px;
         gap: 8px;
         align-items: center;
         font-size: 13px;
+      }
+
+      .barrow span:first-child {
+        overflow-wrap: anywhere;
       }
 
       .bartrack {
@@ -292,6 +467,7 @@
       }
 
       .bar {
+        display: block;
         height: 100%;
         background: var(--accent);
       }
@@ -303,34 +479,24 @@
         margin: 10px 0 0;
       }
 
-      .statusline {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 14px;
-      }
-
-      .metric {
-        background: #ffffff;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 12px;
-      }
-
-      .metric strong {
-        display: block;
-        font-size: 18px;
-      }
-
-      .metric span {
+      .empty {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 13px;
+        padding: 12px;
+        margin: 0;
       }
 
-      @media (max-width: 860px) {
+      .null {
+        color: #667085;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      @media (max-width: 940px) {
         .grid,
         .querybar,
-        .statusline {
+        .schema-layout,
+        .statusline,
+        .toolbar {
           grid-template-columns: 1fr;
         }
 
@@ -343,6 +509,10 @@
         nav {
           justify-content: flex-start;
         }
+
+        .barrow {
+          grid-template-columns: 96px minmax(80px, 1fr) 84px;
+        }
       }
     </style>
   </head>
@@ -353,111 +523,327 @@
           <div class="mark">DT</div>
           <div>
             <h1>DataTalk</h1>
-            <p class="sub">Natural-language company data queries with compiled SQL and grounded rows.</p>
+            <p class="sub">Schema-aware natural-language queries with grounded rows.</p>
           </div>
         </div>
         <nav>
           <a class="linkbtn" href="https://github.com/darshdevlab/DataTalk" target="_blank" rel="noreferrer">GitHub</a>
-          <a class="linkbtn" href="#sql">SQL</a>
         </nav>
       </div>
       <div class="orange-line" aria-hidden="true"></div>
     </header>
 
     <main class="wrap">
+      <div class="tabs" aria-label="DataTalk pages">
+        <button id="schemaTab" class="tab" type="button" aria-pressed="true">Schema & Data</button>
+        <button id="nlpTab" class="tab" type="button" aria-pressed="false">NLP Query</button>
+      </div>
+
       <div class="statusline" aria-label="Demo status">
+        <div class="metric"><strong id="metricTables">6</strong><span>demo tables</span></div>
+        <div class="metric"><strong id="metricRows">75</strong><span>visible sample rows</span></div>
         <div class="metric"><strong>8</strong><span>supported query families</span></div>
-        <div class="metric"><strong>safe</strong><span>read-only SQL templates</span></div>
         <div class="metric"><strong>0</strong><span>browser secrets</span></div>
-        <div class="metric"><strong>static</strong><span>GitHub Pages demo</span></div>
       </div>
 
-      <div class="querybar">
-        <input id="question" aria-label="Question" value="Show revenue by region for 2025" />
-        <button id="runBtn" type="button">Run Query</button>
+      <div id="schemaView" class="view">
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>Schema & Data</h2>
+              <span id="schemaSummary" class="caption"></span>
+            </div>
+            <div id="relations" class="relation-strip" aria-label="Relationships"></div>
+          </div>
+
+          <div class="schema-layout">
+            <aside id="schemaTables" class="table-list" aria-label="Tables"></aside>
+
+            <article class="detail-grid">
+              <div>
+                <div class="section-head">
+                  <div class="section-title">
+                    <h2 id="selectedTableTitle"></h2>
+                    <span id="selectedTableCaption" class="caption"></span>
+                  </div>
+                  <span id="selectedTableCount" class="count-badge"></span>
+                </div>
+
+                <h3>Columns</h3>
+                <div id="columnTable" class="tablewrap"></div>
+
+                <div class="toolbar">
+                  <input id="tableFilter" aria-label="Filter selected table rows" placeholder="Filter sample rows" />
+                  <span id="sampleStatus" class="caption"></span>
+                </div>
+                <div id="sampleRows" class="tablewrap"></div>
+
+                <h3>Used By Query Families</h3>
+                <div id="usedBy" class="lineage"></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>Business Glossary</h2>
+              <span class="caption">Revenue, churn risk, attrition, and overdue invoice definitions used by the compiler.</span>
+            </div>
+          </div>
+          <div id="glossary" class="tablewrap"></div>
+        </section>
       </div>
 
-      <div class="examples" id="examples"></div>
-
-      <div class="grid">
-        <div>
-          <section>
-            <h2>Answer</h2>
-            <div id="meta" class="meta"></div>
-            <p id="answer" class="answer"></p>
-            <h3>Source Rows</h3>
-            <div id="rows" class="tablewrap"></div>
-          </section>
-
-          <section>
-            <h2>Visual Check</h2>
-            <div id="chart" class="chart"></div>
-            <p class="note">This public page uses embedded demo data. The trained T5 checkpoint stays out of GitHub; a separate model API can be connected later without exposing tokens.</p>
-          </section>
+      <div id="nlpView" class="view" hidden>
+        <div class="querybar">
+          <input id="question" aria-label="Question" value="Show revenue by region for 2025" />
+          <button id="runBtn" type="button">Run Query</button>
         </div>
 
-        <div>
-          <section id="sql">
-            <h2>Compiled SQL</h2>
-            <pre id="sqlOut"></pre>
-          </section>
+        <div class="examples" id="examples"></div>
 
-          <section>
-            <h2>Deployment Boundary</h2>
-            <p class="note">
-              GitHub Pages hosts this static UI. No API keys, write tokens, train data, validation data, SQLite artifact, or model weights are shipped in the browser.
-            </p>
-          </section>
+        <div class="grid">
+          <div>
+            <section>
+              <div class="section-head">
+                <div class="section-title">
+                  <h2>Answer</h2>
+                  <span id="lineageTitle" class="caption"></span>
+                </div>
+                <div id="lineage" class="lineage" aria-label="Tables used"></div>
+              </div>
+              <div id="meta" class="meta"></div>
+              <p id="answer" class="answer"></p>
+              <h3>Source Rows</h3>
+              <div id="rows" class="tablewrap"></div>
+            </section>
+
+            <section>
+              <h2>Visual Check</h2>
+              <div id="chart" class="chart"></div>
+              <p class="note">This public page uses embedded demo rows. The trained T5 checkpoint stays out of GitHub; a separate model API can be connected later without exposing tokens.</p>
+            </section>
+          </div>
+
+          <div>
+            <section id="sql">
+              <h2>Compiled SQL</h2>
+              <pre id="sqlOut"></pre>
+            </section>
+
+            <section>
+              <h2>Deployment Boundary</h2>
+              <p class="note">
+                GitHub Pages hosts this static UI. No API keys, write tokens, train data, validation data, SQLite artifact, or model weights are shipped in the browser.
+              </p>
+            </section>
+          </div>
         </div>
       </div>
     </main>
 
     <script>
-      const demo = {
-        revenueByRegion: [
-          { region: "South", revenue: 622766.44 },
-          { region: "West", revenue: 536683.17 },
-          { region: "North", revenue: 491520.79 },
-          { region: "Central", revenue: 481067.11 },
-          { region: "East", revenue: 365293.36 }
+      const tables = {
+        customers: [
+          { customer_id: 1, customer_name: "Aarav Labs", segment: "enterprise", region: "South", industry: "healthcare", joined_date: "2022-03-10" },
+          { customer_id: 2, customer_name: "Mira Systems", segment: "mid-market", region: "West", industry: "finance", joined_date: "2023-07-18" },
+          { customer_id: 3, customer_name: "Dev Cloud", segment: "enterprise", region: "North", industry: "software", joined_date: "2021-11-04" },
+          { customer_id: 4, customer_name: "Isha Analytics", segment: "startup", region: "East", industry: "retail", joined_date: "2025-02-21" },
+          { customer_id: 5, customer_name: "Kabir Digital", segment: "mid-market", region: "Central", industry: "education", joined_date: "2024-05-14" },
+          { customer_id: 6, customer_name: "Riya Group", segment: "enterprise", region: "South", industry: "manufacturing", joined_date: "2022-09-09" },
+          { customer_id: 7, customer_name: "Neel Works", segment: "startup", region: "West", industry: "software", joined_date: "2025-10-01" },
+          { customer_id: 8, customer_name: "Zara Cloud", segment: "mid-market", region: "Central", industry: "healthcare", joined_date: "2023-01-12" }
         ],
-        topProducts: [
-          { product_name: "DataTalk Pro", category: "Analytics", revenue: 812440.15, units_sold: 621 },
-          { product_name: "Retention Radar", category: "Customer Success", revenue: 604210.32, units_sold: 428 },
-          { product_name: "Forecast API", category: "Finance", revenue: 501880.75, units_sold: 392 },
-          { product_name: "DataTalk Core", category: "Analytics", revenue: 376950.08, units_sold: 355 }
+        products: [
+          { product_id: 1, product_name: "DataTalk Pro", category: "Analytics", list_price: 179.0 },
+          { product_id: 2, product_name: "Retention Radar", category: "Customer Success", list_price: 149.0 },
+          { product_id: 3, product_name: "Forecast API", category: "Finance", list_price: 199.0 },
+          { product_id: 4, product_name: "DataTalk Core", category: "Analytics", list_price: 99.0 },
+          { product_id: 5, product_name: "Support Pulse", category: "Support", list_price: 89.0 },
+          { product_id: 6, product_name: "Ledger Lens", category: "Finance", list_price: 129.0 }
         ],
-        topCustomers: [
-          { customer_name: "Customer 014", segment: "enterprise", region: "South", revenue: 118920.4 },
-          { customer_name: "Customer 057", segment: "mid-market", region: "West", revenue: 104220.8 },
-          { customer_name: "Customer 023", segment: "enterprise", region: "North", revenue: 99810.2 }
+        sales_orders: [
+          { order_id: 1001, order_date: "2025-01-12", customer_id: 1, product_id: 1, region: "South", channel: "direct", quantity: 14, unit_price: 179.0, discount_pct: 0.05 },
+          { order_id: 1002, order_date: "2025-01-18", customer_id: 2, product_id: 2, region: "West", channel: "partner", quantity: 10, unit_price: 149.0, discount_pct: 0.1 },
+          { order_id: 1003, order_date: "2025-02-03", customer_id: 3, product_id: 3, region: "North", channel: "marketplace", quantity: 8, unit_price: 199.0, discount_pct: 0.05 },
+          { order_id: 1004, order_date: "2025-02-17", customer_id: 5, product_id: 4, region: "Central", channel: "direct", quantity: 20, unit_price: 99.0, discount_pct: 0 },
+          { order_id: 1005, order_date: "2025-03-07", customer_id: 1, product_id: 2, region: "South", channel: "inside_sales", quantity: 9, unit_price: 149.0, discount_pct: 0.05 },
+          { order_id: 1006, order_date: "2025-03-28", customer_id: 4, product_id: 5, region: "East", channel: "marketplace", quantity: 18, unit_price: 89.0, discount_pct: 0.1 },
+          { order_id: 1007, order_date: "2025-04-11", customer_id: 6, product_id: 1, region: "South", channel: "direct", quantity: 12, unit_price: 185.0, discount_pct: 0.1 },
+          { order_id: 1008, order_date: "2025-04-30", customer_id: 2, product_id: 3, region: "West", channel: "partner", quantity: 7, unit_price: 205.0, discount_pct: 0 },
+          { order_id: 1009, order_date: "2025-05-19", customer_id: 3, product_id: 6, region: "North", channel: "direct", quantity: 15, unit_price: 129.0, discount_pct: 0.05 },
+          { order_id: 1010, order_date: "2025-06-02", customer_id: 5, product_id: 1, region: "Central", channel: "inside_sales", quantity: 6, unit_price: 179.0, discount_pct: 0 },
+          { order_id: 1011, order_date: "2025-07-14", customer_id: 6, product_id: 2, region: "South", channel: "partner", quantity: 11, unit_price: 149.0, discount_pct: 0.1 },
+          { order_id: 1012, order_date: "2025-08-23", customer_id: 7, product_id: 4, region: "West", channel: "marketplace", quantity: 16, unit_price: 99.0, discount_pct: 0.05 },
+          { order_id: 1013, order_date: "2025-09-02", customer_id: 8, product_id: 6, region: "Central", channel: "direct", quantity: 13, unit_price: 129.0, discount_pct: 0 },
+          { order_id: 1014, order_date: "2025-10-06", customer_id: 1, product_id: 3, region: "South", channel: "direct", quantity: 9, unit_price: 199.0, discount_pct: 0.1 },
+          { order_id: 1015, order_date: "2025-10-25", customer_id: 2, product_id: 1, region: "West", channel: "partner", quantity: 11, unit_price: 179.0, discount_pct: 0.05 },
+          { order_id: 1016, order_date: "2025-11-09", customer_id: 3, product_id: 5, region: "North", channel: "marketplace", quantity: 21, unit_price: 89.0, discount_pct: 0.15 },
+          { order_id: 1017, order_date: "2025-11-19", customer_id: 4, product_id: 2, region: "East", channel: "inside_sales", quantity: 13, unit_price: 149.0, discount_pct: 0 },
+          { order_id: 1018, order_date: "2025-12-05", customer_id: 5, product_id: 4, region: "Central", channel: "direct", quantity: 17, unit_price: 99.0, discount_pct: 0.1 },
+          { order_id: 1019, order_date: "2025-12-16", customer_id: 6, product_id: 1, region: "South", channel: "partner", quantity: 10, unit_price: 179.0, discount_pct: 0 },
+          { order_id: 1020, order_date: "2025-12-22", customer_id: 8, product_id: 6, region: "Central", channel: "marketplace", quantity: 8, unit_price: 129.0, discount_pct: 0.05 },
+          { order_id: 2001, order_date: "2026-01-09", customer_id: 1, product_id: 1, region: "South", channel: "direct", quantity: 12, unit_price: 181.0, discount_pct: 0.05 },
+          { order_id: 2002, order_date: "2026-01-16", customer_id: 2, product_id: 2, region: "West", channel: "partner", quantity: 15, unit_price: 150.0, discount_pct: 0.1 },
+          { order_id: 2003, order_date: "2026-02-05", customer_id: 3, product_id: 1, region: "North", channel: "marketplace", quantity: 18, unit_price: 179.0, discount_pct: 0.05 },
+          { order_id: 2004, order_date: "2026-02-20", customer_id: 5, product_id: 3, region: "Central", channel: "direct", quantity: 7, unit_price: 205.0, discount_pct: 0 },
+          { order_id: 2005, order_date: "2026-03-04", customer_id: 6, product_id: 4, region: "South", channel: "inside_sales", quantity: 22, unit_price: 99.0, discount_pct: 0.05 },
+          { order_id: 2006, order_date: "2026-03-18", customer_id: 8, product_id: 6, region: "Central", channel: "partner", quantity: 10, unit_price: 129.0, discount_pct: 0.1 },
+          { order_id: 2007, order_date: "2026-04-02", customer_id: 2, product_id: 1, region: "West", channel: "direct", quantity: 8, unit_price: 179.0, discount_pct: 0 }
         ],
-        churn: [
-          { customer_name: "Customer 071", segment: "enterprise", region: "West", risky_ticket_count: 5, worst_sentiment: 1, issue_types: "bug,performance" },
-          { customer_name: "Customer 006", segment: "mid-market", region: "South", risky_ticket_count: 4, worst_sentiment: 1, issue_types: "billing,training" }
+        support_tickets: [
+          { ticket_id: 501, opened_date: "2025-10-03", closed_date: null, customer_id: 1, product_id: 1, priority: "critical", status: "open", sentiment_score: 1, issue_type: "performance" },
+          { ticket_id: 502, opened_date: "2025-10-11", closed_date: null, customer_id: 1, product_id: 2, priority: "high", status: "pending", sentiment_score: 2, issue_type: "bug" },
+          { ticket_id: 503, opened_date: "2025-11-02", closed_date: "2025-11-10", customer_id: 2, product_id: 2, priority: "medium", status: "closed", sentiment_score: 3, issue_type: "billing" },
+          { ticket_id: 504, opened_date: "2025-11-18", closed_date: null, customer_id: 6, product_id: 1, priority: "high", status: "open", sentiment_score: 1, issue_type: "onboarding" },
+          { ticket_id: 505, opened_date: "2025-12-05", closed_date: null, customer_id: 6, product_id: 4, priority: "critical", status: "pending", sentiment_score: 2, issue_type: "performance" },
+          { ticket_id: 506, opened_date: "2025-12-15", closed_date: null, customer_id: 2, product_id: 5, priority: "medium", status: "open", sentiment_score: 2, issue_type: "billing" },
+          { ticket_id: 507, opened_date: "2026-01-12", closed_date: null, customer_id: 3, product_id: 3, priority: "high", status: "open", sentiment_score: 3, issue_type: "security" },
+          { ticket_id: 508, opened_date: "2026-02-22", closed_date: "2026-03-01", customer_id: 5, product_id: 4, priority: "low", status: "closed", sentiment_score: 4, issue_type: "feature_request" },
+          { ticket_id: 509, opened_date: "2025-08-21", closed_date: null, customer_id: 7, product_id: 1, priority: "medium", status: "pending", sentiment_score: 2, issue_type: "bug" },
+          { ticket_id: 510, opened_date: "2025-05-14", closed_date: null, customer_id: 4, product_id: 5, priority: "low", status: "open", sentiment_score: 5, issue_type: "onboarding" },
+          { ticket_id: 511, opened_date: "2025-10-28", closed_date: null, customer_id: 1, product_id: 3, priority: "high", status: "open", sentiment_score: 2, issue_type: "security" },
+          { ticket_id: 512, opened_date: "2025-12-21", closed_date: null, customer_id: 8, product_id: 6, priority: "critical", status: "open", sentiment_score: 1, issue_type: "billing" }
         ],
-        tickets: [
-          { status: "open", priority: "critical", ticket_count: 24, avg_sentiment: 1.8 },
-          { status: "in_progress", priority: "high", ticket_count: 31, avg_sentiment: 2.4 },
-          { status: "open", priority: "medium", ticket_count: 46, avg_sentiment: 3.1 }
-        ],
-        attrition: [
-          { department: "Support", employees_left: 7 },
-          { department: "Sales", employees_left: 5 },
-          { department: "Engineering", employees_left: 3 }
+        employees: [
+          { employee_id: 1, employee_name: "Dev Shah", department: "Sales", region: "South", hire_date: "2021-03-12", status: "left", left_date: "2025-05-10", performance_band: "B" },
+          { employee_id: 2, employee_name: "Isha Patel", department: "Support", region: "West", hire_date: "2020-08-04", status: "left", left_date: "2026-02-12", performance_band: "C" },
+          { employee_id: 3, employee_name: "Aarav Singh", department: "Engineering", region: "North", hire_date: "2019-11-19", status: "active", left_date: null, performance_band: "A" },
+          { employee_id: 4, employee_name: "Mira Dave", department: "Support", region: "Central", hire_date: "2022-01-07", status: "left", left_date: "2025-11-01", performance_band: "B" },
+          { employee_id: 5, employee_name: "Kabir Mehta", department: "Finance", region: "East", hire_date: "2023-04-15", status: "active", left_date: null, performance_band: "A" },
+          { employee_id: 6, employee_name: "Riya Patel", department: "Sales", region: "South", hire_date: "2024-06-01", status: "active", left_date: null, performance_band: "A" },
+          { employee_id: 7, employee_name: "Neel Shah", department: "Support", region: "West", hire_date: "2021-09-27", status: "active", left_date: null, performance_band: "B" },
+          { employee_id: 8, employee_name: "Zara Singh", department: "Marketing", region: "Central", hire_date: "2020-12-08", status: "left", left_date: "2025-09-18", performance_band: "B" },
+          { employee_id: 9, employee_name: "Anika Dave", department: "Support", region: "North", hire_date: "2022-05-20", status: "left", left_date: "2026-03-03", performance_band: "C" },
+          { employee_id: 10, employee_name: "Vihaan Mehta", department: "Engineering", region: "South", hire_date: "2021-07-13", status: "left", left_date: "2026-01-20", performance_band: "B" },
+          { employee_id: 11, employee_name: "Diya Shah", department: "Operations", region: "East", hire_date: "2023-02-11", status: "active", left_date: null, performance_band: "A" },
+          { employee_id: 12, employee_name: "Arjun Patel", department: "Sales", region: "West", hire_date: "2019-01-18", status: "left", left_date: "2025-12-08", performance_band: "C" }
         ],
         invoices: [
-          { customer_name: "Customer 044", segment: "enterprise", region: "Central", overdue_invoice_count: 4, overdue_amount: 74210.5 },
-          { customer_name: "Customer 019", segment: "mid-market", region: "East", overdue_invoice_count: 3, overdue_amount: 38940.75 }
-        ],
-        monthly: [
-          { month: "2025-01", revenue: 178210.4, order_count: 93 },
-          { month: "2025-02", revenue: 188911.2, order_count: 96 },
-          { month: "2025-03", revenue: 205102.8, order_count: 99 },
-          { month: "2025-04", revenue: 196450.7, order_count: 94 },
-          { month: "2025-05", revenue: 215410.5, order_count: 101 }
+          { invoice_id: 9001, customer_id: 1, invoice_date: "2025-10-06", due_date: "2025-11-05", paid_date: null, amount: 1611.9, status: "open" },
+          { invoice_id: 9002, customer_id: 2, invoice_date: "2025-10-25", due_date: "2025-11-24", paid_date: null, amount: 1870.55, status: "open" },
+          { invoice_id: 9003, customer_id: 6, invoice_date: "2025-12-16", due_date: "2026-01-15", paid_date: null, amount: 1790.0, status: "open" },
+          { invoice_id: 9004, customer_id: 5, invoice_date: "2025-12-05", due_date: "2026-01-04", paid_date: "2025-12-28", amount: 1514.7, status: "paid" },
+          { invoice_id: 9005, customer_id: 8, invoice_date: "2026-01-10", due_date: "2026-02-09", paid_date: null, amount: 1161.0, status: "open" },
+          { invoice_id: 9006, customer_id: 3, invoice_date: "2026-02-05", due_date: "2026-03-07", paid_date: "2026-02-28", amount: 3060.9, status: "paid" },
+          { invoice_id: 9007, customer_id: 1, invoice_date: "2026-03-09", due_date: "2026-04-08", paid_date: null, amount: 2063.4, status: "open" },
+          { invoice_id: 9008, customer_id: 2, invoice_date: "2026-01-16", due_date: "2026-02-15", paid_date: null, amount: 2025.0, status: "open" },
+          { invoice_id: 9009, customer_id: 6, invoice_date: "2026-03-04", due_date: "2026-04-03", paid_date: null, amount: 2069.1, status: "open" },
+          { invoice_id: 9010, customer_id: 8, invoice_date: "2025-12-22", due_date: "2026-01-21", paid_date: null, amount: 980.4, status: "open" }
         ]
       };
+
+      const schema = [
+        {
+          name: "customers",
+          title: "Customers",
+          description: "Customer account master data used for segmentation, region analysis, and joins.",
+          usedBy: ["customer_revenue", "churn_risk_tickets", "overdue_invoices"],
+          columns: [
+            ["customer_id", "INTEGER", "PK", "Customer identifier"],
+            ["customer_name", "TEXT", "", "Customer display name"],
+            ["segment", "TEXT", "", "startup, mid-market, or enterprise"],
+            ["region", "TEXT", "", "Sales region"],
+            ["industry", "TEXT", "", "Customer industry"],
+            ["joined_date", "TEXT", "", "ISO joined date"]
+          ]
+        },
+        {
+          name: "products",
+          title: "Products",
+          description: "Product catalog used for revenue, category, and support joins.",
+          usedBy: ["top_products", "support_ticket_context"],
+          columns: [
+            ["product_id", "INTEGER", "PK", "Product identifier"],
+            ["product_name", "TEXT", "", "Product display name"],
+            ["category", "TEXT", "", "Business product category"],
+            ["list_price", "REAL", "", "Default list price"]
+          ]
+        },
+        {
+          name: "sales_orders",
+          title: "Sales Orders",
+          description: "Order facts for revenue, product ranking, customer spend, and monthly trends.",
+          usedBy: ["revenue_by_region", "top_products", "customer_revenue", "monthly_revenue_trend"],
+          columns: [
+            ["order_id", "INTEGER", "PK", "Order identifier"],
+            ["order_date", "TEXT", "", "ISO order date"],
+            ["customer_id", "INTEGER", "FK", "References customers.customer_id"],
+            ["product_id", "INTEGER", "FK", "References products.product_id"],
+            ["region", "TEXT", "", "Region copied from the customer account"],
+            ["channel", "TEXT", "", "Sales channel"],
+            ["quantity", "INTEGER", "", "Units sold"],
+            ["unit_price", "REAL", "", "Transaction unit price"],
+            ["discount_pct", "REAL", "", "Discount as decimal percentage"]
+          ]
+        },
+        {
+          name: "support_tickets",
+          title: "Support Tickets",
+          description: "Ticket events used for open-ticket and churn-risk query families.",
+          usedBy: ["churn_risk_tickets", "tickets_by_status_priority"],
+          columns: [
+            ["ticket_id", "INTEGER", "PK", "Ticket identifier"],
+            ["opened_date", "TEXT", "", "ISO opened date"],
+            ["closed_date", "TEXT", "", "ISO closed date or NULL"],
+            ["customer_id", "INTEGER", "FK", "References customers.customer_id"],
+            ["product_id", "INTEGER", "FK", "References products.product_id"],
+            ["priority", "TEXT", "", "low, medium, high, critical"],
+            ["status", "TEXT", "", "open, pending, closed"],
+            ["sentiment_score", "INTEGER", "", "1 is worst, 5 is best"],
+            ["issue_type", "TEXT", "", "Ticket category"]
+          ]
+        },
+        {
+          name: "employees",
+          title: "Employees",
+          description: "Employee status facts used for attrition analysis.",
+          usedBy: ["attrition_by_department"],
+          columns: [
+            ["employee_id", "INTEGER", "PK", "Employee identifier"],
+            ["employee_name", "TEXT", "", "Employee display name"],
+            ["department", "TEXT", "", "Business department"],
+            ["region", "TEXT", "", "Work region"],
+            ["hire_date", "TEXT", "", "ISO hire date"],
+            ["status", "TEXT", "", "active or left"],
+            ["left_date", "TEXT", "", "ISO left date or NULL"],
+            ["performance_band", "TEXT", "", "Internal band"]
+          ]
+        },
+        {
+          name: "invoices",
+          title: "Invoices",
+          description: "Billing facts used for overdue exposure and customer finance checks.",
+          usedBy: ["overdue_invoices"],
+          columns: [
+            ["invoice_id", "INTEGER", "PK", "Invoice identifier"],
+            ["customer_id", "INTEGER", "FK", "References customers.customer_id"],
+            ["invoice_date", "TEXT", "", "ISO invoice date"],
+            ["due_date", "TEXT", "", "ISO due date"],
+            ["paid_date", "TEXT", "", "ISO paid date or NULL"],
+            ["amount", "REAL", "", "Invoice amount"],
+            ["status", "TEXT", "", "open or paid"]
+          ]
+        }
+      ];
+
+      const relationships = [
+        "sales_orders.customer_id -> customers.customer_id",
+        "sales_orders.product_id -> products.product_id",
+        "support_tickets.customer_id -> customers.customer_id",
+        "support_tickets.product_id -> products.product_id",
+        "invoices.customer_id -> customers.customer_id"
+      ];
+
+      const glossary = [
+        { term: "revenue", definition: "SUM(quantity * unit_price * (1 - discount_pct)) from sales_orders" },
+        { term: "churn-risk ticket", definition: "status is not closed and priority is high/critical or sentiment_score <= 2" },
+        { term: "attrition", definition: "employees where status = left" },
+        { term: "overdue invoice", definition: "invoice where status = open and due_date is before 2026-04-01" },
+        { term: "enterprise customer", definition: "customers where segment = enterprise" }
+      ];
 
       const examples = [
         "Show revenue by region for 2025",
@@ -470,214 +856,532 @@
         "Show monthly revenue trend for 2025"
       ];
 
-      function dateFilter(question, column) {
-        const q = question.toLowerCase();
-        if (q.includes("q1") || q.includes("quarter 1")) return `${column} BETWEEN '2026-01-01' AND '2026-03-31'`;
-        if (q.includes("q2")) return `${column} BETWEEN '2025-04-01' AND '2025-06-30'`;
-        if (q.includes("q3")) return `${column} BETWEEN '2025-07-01' AND '2025-09-30'`;
-        if (q.includes("q4")) return `${column} BETWEEN '2025-10-01' AND '2025-12-31'`;
-        if (q.includes("2026")) return `${column} BETWEEN '2026-01-01' AND '2026-12-31'`;
-        return `${column} BETWEEN '2025-01-01' AND '2025-12-31'`;
+      const customerById = Object.fromEntries(tables.customers.map((row) => [row.customer_id, row]));
+      const productById = Object.fromEntries(tables.products.map((row) => [row.product_id, row]));
+      let activeTable = "sales_orders";
+      let schemaFilter = "";
+      let activeView = "schema";
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function formatValue(value, key = "") {
+        if (value === null || value === undefined) return "<span class=\"null\">NULL</span>";
+        if (typeof value !== "number") return escapeHtml(value);
+        if (key === "discount_pct") return `${(value * 100).toFixed(0)}%`;
+        if (key.endsWith("_id") || key.includes("count") || key === "quantity" || key === "units_sold" || key.includes("score")) {
+          return escapeHtml(value.toLocaleString("en-US"));
+        }
+        return escapeHtml(value.toLocaleString("en-US", { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 }));
+      }
+
+      function renderRows(rows, options = {}) {
+        const maxRows = options.maxRows || rows.length;
+        if (!rows.length) return "<p class=\"empty\">No rows.</p>";
+        const visibleRows = rows.slice(0, maxRows);
+        const cols = Object.keys(visibleRows[0]);
+        return `<table><thead><tr>${cols.map((col) => `<th>${escapeHtml(col)}</th>`).join("")}</tr></thead><tbody>` +
+          visibleRows.map((row) => `<tr>${cols.map((col) => `<td>${formatValue(row[col], col)}</td>`).join("")}</tr>`).join("") +
+          "</tbody></table>";
+      }
+
+      function round2(value) {
+        return Math.round((value + Number.EPSILON) * 100) / 100;
+      }
+
+      function revenue(order) {
+        return round2(order.quantity * order.unit_price * (1 - order.discount_pct));
+      }
+
+      function normalize(question) {
+        return question.toLowerCase().trim();
+      }
+
+      function dateRange(question, column) {
+        const q = normalize(question);
+        const explicitYear = q.includes("2026") ? "2026" : q.includes("2025") ? "2025" : null;
+        if (q.includes("q1") || q.includes("quarter 1")) {
+          const year = explicitYear || "2026";
+          return { label: `Q1 ${year}`, start: `${year}-01-01`, end: `${year}-03-31`, sql: `${column} BETWEEN '${year}-01-01' AND '${year}-03-31'` };
+        }
+        if (q.includes("q2")) {
+          const year = explicitYear || "2025";
+          return { label: `Q2 ${year}`, start: `${year}-04-01`, end: `${year}-06-30`, sql: `${column} BETWEEN '${year}-04-01' AND '${year}-06-30'` };
+        }
+        if (q.includes("q3")) {
+          const year = explicitYear || "2025";
+          return { label: `Q3 ${year}`, start: `${year}-07-01`, end: `${year}-09-30`, sql: `${column} BETWEEN '${year}-07-01' AND '${year}-09-30'` };
+        }
+        if (q.includes("q4")) {
+          const year = explicitYear || "2025";
+          return { label: `Q4 ${year}`, start: `${year}-10-01`, end: `${year}-12-31`, sql: `${column} BETWEEN '${year}-10-01' AND '${year}-12-31'` };
+        }
+        if (q.includes("2026")) return { label: "2026", start: "2026-01-01", end: "2026-12-31", sql: `${column} BETWEEN '2026-01-01' AND '2026-12-31'` };
+        return { label: "2025", start: "2025-01-01", end: "2025-12-31", sql: `${column} BETWEEN '2025-01-01' AND '2025-12-31'` };
+      }
+
+      function between(value, range) {
+        return value >= range.start && value <= range.end;
+      }
+
+      function sortDesc(rows, key) {
+        return rows.sort((a, b) => b[key] - a[key]);
+      }
+
+      function selectRevenueByRegion(range) {
+        const totals = new Map();
+        tables.sales_orders.filter((row) => between(row.order_date, range)).forEach((row) => {
+          totals.set(row.region, round2((totals.get(row.region) || 0) + revenue(row)));
+        });
+        return sortDesc(Array.from(totals, ([region, totalRevenue]) => ({ region, revenue: totalRevenue })), "revenue");
+      }
+
+      function selectTopProducts(range) {
+        const totals = new Map();
+        tables.sales_orders.filter((row) => between(row.order_date, range)).forEach((row) => {
+          const product = productById[row.product_id];
+          const current = totals.get(row.product_id) || { product_name: product.product_name, category: product.category, revenue: 0, units_sold: 0 };
+          current.revenue = round2(current.revenue + revenue(row));
+          current.units_sold += row.quantity;
+          totals.set(row.product_id, current);
+        });
+        return sortDesc(Array.from(totals.values()), "revenue").slice(0, 10);
+      }
+
+      function selectTopCustomers(range) {
+        const totals = new Map();
+        tables.sales_orders.filter((row) => between(row.order_date, range)).forEach((row) => {
+          const customer = customerById[row.customer_id];
+          const current = totals.get(row.customer_id) || {
+            customer_name: customer.customer_name,
+            segment: customer.segment,
+            region: customer.region,
+            revenue: 0
+          };
+          current.revenue = round2(current.revenue + revenue(row));
+          totals.set(row.customer_id, current);
+        });
+        return sortDesc(Array.from(totals.values()), "revenue").slice(0, 15);
+      }
+
+      function selectChurnRisk(range) {
+        const groups = new Map();
+        tables.support_tickets
+          .filter((row) => between(row.opened_date, range))
+          .filter((row) => row.status !== "closed" && (["high", "critical"].includes(row.priority) || row.sentiment_score <= 2))
+          .forEach((row) => {
+            const customer = customerById[row.customer_id];
+            const current = groups.get(row.customer_id) || {
+              customer_name: customer.customer_name,
+              segment: customer.segment,
+              region: customer.region,
+              risky_ticket_count: 0,
+              worst_sentiment: row.sentiment_score,
+              issue_types: new Set()
+            };
+            current.risky_ticket_count += 1;
+            current.worst_sentiment = Math.min(current.worst_sentiment, row.sentiment_score);
+            current.issue_types.add(row.issue_type);
+            groups.set(row.customer_id, current);
+          });
+        return Array.from(groups.values())
+          .map((row) => ({ ...row, issue_types: Array.from(row.issue_types).sort().join(",") }))
+          .sort((a, b) => b.risky_ticket_count - a.risky_ticket_count || a.worst_sentiment - b.worst_sentiment);
+      }
+
+      function selectTicketsByStatusPriority(range, question) {
+        const q = normalize(question);
+        const rows = tables.support_tickets
+          .filter((row) => between(row.opened_date, range))
+          .filter((row) => !q.includes("open") || row.status !== "closed");
+        const groups = new Map();
+        rows.forEach((row) => {
+          const key = `${row.status}|${row.priority}`;
+          const current = groups.get(key) || { status: row.status, priority: row.priority, ticket_count: 0, sentiment_total: 0 };
+          current.ticket_count += 1;
+          current.sentiment_total += row.sentiment_score;
+          groups.set(key, current);
+        });
+        return Array.from(groups.values())
+          .map((row) => ({ status: row.status, priority: row.priority, ticket_count: row.ticket_count, avg_sentiment: round2(row.sentiment_total / row.ticket_count) }))
+          .sort((a, b) => b.ticket_count - a.ticket_count || a.status.localeCompare(b.status) || a.priority.localeCompare(b.priority));
+      }
+
+      function selectAttrition() {
+        const groups = new Map();
+        tables.employees.filter((row) => row.status === "left").forEach((row) => {
+          groups.set(row.department, (groups.get(row.department) || 0) + 1);
+        });
+        return sortDesc(Array.from(groups, ([department, employees_left]) => ({ department, employees_left })), "employees_left");
+      }
+
+      function selectOverdueInvoices(question) {
+        const q = normalize(question);
+        const hasPeriod = q.includes("2025") || q.includes("2026") || q.includes("q1") || q.includes("q2") || q.includes("q3") || q.includes("q4");
+        const range = dateRange(question, "due_date");
+        const groups = new Map();
+        tables.invoices
+          .filter((row) => row.status === "open" && row.due_date < "2026-04-01")
+          .filter((row) => !hasPeriod || between(row.due_date, range))
+          .forEach((row) => {
+            const customer = customerById[row.customer_id];
+            const current = groups.get(row.customer_id) || {
+              customer_name: customer.customer_name,
+              segment: customer.segment,
+              region: customer.region,
+              overdue_invoice_count: 0,
+              overdue_amount: 0
+            };
+            current.overdue_invoice_count += 1;
+            current.overdue_amount = round2(current.overdue_amount + row.amount);
+            groups.set(row.customer_id, current);
+          });
+        return sortDesc(Array.from(groups.values()), "overdue_amount").slice(0, 15);
+      }
+
+      function selectMonthlyRevenue(range) {
+        const groups = new Map();
+        tables.sales_orders.filter((row) => between(row.order_date, range)).forEach((row) => {
+          const month = row.order_date.slice(0, 7);
+          const current = groups.get(month) || { month, revenue: 0, order_count: 0 };
+          current.revenue = round2(current.revenue + revenue(row));
+          current.order_count += 1;
+          groups.set(month, current);
+        });
+        return Array.from(groups.values()).sort((a, b) => a.month.localeCompare(b.month));
       }
 
       function compile(question) {
-        const q = question.toLowerCase();
-        const salesDate = dateFilter(question, "order_date");
-        const ticketDate = dateFilter(question, "opened_date");
-        const invoiceDate = dateFilter(question, "due_date");
+        const q = normalize(question);
+        const salesDate = dateRange(question, "order_date");
+        const ticketDate = dateRange(question, "opened_date");
 
         if (q.includes("revenue") && q.includes("region")) {
+          const rows = selectRevenueByRegion(salesDate);
           return {
             route: "revenue_by_region",
             confidence: 0.96,
-            rows: demo.revenueByRegion,
+            rows,
+            tablesUsed: ["sales_orders"],
+            period: salesDate.label,
             sql: `SELECT region, ROUND(SUM(quantity * unit_price * (1 - discount_pct)), 2) AS revenue
 FROM sales_orders
-WHERE ${salesDate}
+WHERE ${salesDate.sql}
 GROUP BY region
 ORDER BY revenue DESC`,
-            answer: `Top region is ${demo.revenueByRegion[0].region} with revenue ${demo.revenueByRegion[0].revenue.toFixed(2)}.`
+            answer: rows.length ? `Top region is ${rows[0].region} with revenue ${rows[0].revenue.toFixed(2)}.` : "No matching revenue rows."
           };
         }
 
         if ((q.includes("top product") || q.includes("best product")) && q.includes("revenue")) {
+          const rows = selectTopProducts(salesDate);
           return {
             route: "top_products",
             confidence: 0.96,
-            rows: demo.topProducts,
+            rows,
+            tablesUsed: ["sales_orders", "products"],
+            period: salesDate.label,
             sql: `SELECT p.product_name, p.category,
        ROUND(SUM(s.quantity * s.unit_price * (1 - s.discount_pct)), 2) AS revenue,
        SUM(s.quantity) AS units_sold
 FROM sales_orders s
 JOIN products p ON p.product_id = s.product_id
-WHERE ${salesDate}
+WHERE ${salesDate.sql.replace("order_date", "s.order_date")}
 GROUP BY p.product_id, p.product_name, p.category
 ORDER BY revenue DESC
 LIMIT 10`,
-            answer: `Top product is ${demo.topProducts[0].product_name} with revenue ${demo.topProducts[0].revenue.toFixed(2)}.`
+            answer: rows.length ? `Top product is ${rows[0].product_name} with revenue ${rows[0].revenue.toFixed(2)}.` : "No matching product rows."
           };
         }
 
         if (q.includes("customer") && (q.includes("spend") || q.includes("sales") || q.includes("revenue"))) {
+          const rows = selectTopCustomers(salesDate);
           return {
             route: "customer_revenue",
             confidence: 0.96,
-            rows: demo.topCustomers,
+            rows,
+            tablesUsed: ["sales_orders", "customers"],
+            period: salesDate.label,
             sql: `SELECT c.customer_name, c.segment, c.region,
        ROUND(SUM(s.quantity * s.unit_price * (1 - s.discount_pct)), 2) AS revenue
 FROM sales_orders s
 JOIN customers c ON c.customer_id = s.customer_id
-WHERE ${salesDate}
+WHERE ${salesDate.sql.replace("order_date", "s.order_date")}
 GROUP BY c.customer_id, c.customer_name, c.segment, c.region
 ORDER BY revenue DESC
 LIMIT 15`,
-            answer: `Top customer is ${demo.topCustomers[0].customer_name} with revenue ${demo.topCustomers[0].revenue.toFixed(2)}.`
+            answer: rows.length ? `Top customer is ${rows[0].customer_name} with revenue ${rows[0].revenue.toFixed(2)}.` : "No matching customer rows."
           };
         }
 
         if (q.includes("churn") || (q.includes("risk") && q.includes("ticket"))) {
+          const rows = selectChurnRisk(ticketDate);
           return {
             route: "churn_risk_tickets",
             confidence: 0.96,
-            rows: demo.churn,
+            rows,
+            tablesUsed: ["support_tickets", "customers"],
+            period: ticketDate.label,
             sql: `SELECT c.customer_name, c.segment, c.region,
        COUNT(*) AS risky_ticket_count,
        MIN(t.sentiment_score) AS worst_sentiment,
        GROUP_CONCAT(DISTINCT t.issue_type) AS issue_types
 FROM support_tickets t
 JOIN customers c ON c.customer_id = t.customer_id
-WHERE ${ticketDate}
+WHERE ${ticketDate.sql.replace("opened_date", "t.opened_date")}
   AND t.status != 'closed'
   AND (t.priority IN ('high', 'critical') OR t.sentiment_score <= 2)
 GROUP BY c.customer_id, c.customer_name, c.segment, c.region
 ORDER BY risky_ticket_count DESC, worst_sentiment ASC
 LIMIT 15`,
-            answer: `Highest churn-risk customer is ${demo.churn[0].customer_name} with ${demo.churn[0].risky_ticket_count} risky ticket(s).`
+            answer: rows.length ? `Highest churn-risk customer is ${rows[0].customer_name} with ${rows[0].risky_ticket_count} risky ticket(s).` : "No matching churn-risk rows."
           };
         }
 
         if (q.includes("ticket")) {
+          const rows = selectTicketsByStatusPriority(ticketDate, question);
+          const openClause = q.includes("open") ? "\n  AND status != 'closed'" : "";
           return {
             route: "tickets_by_status_priority",
             confidence: 0.96,
-            rows: demo.tickets,
+            rows,
+            tablesUsed: ["support_tickets"],
+            period: ticketDate.label,
             sql: `SELECT status, priority, COUNT(*) AS ticket_count, ROUND(AVG(sentiment_score), 2) AS avg_sentiment
 FROM support_tickets
-WHERE ${ticketDate}
+WHERE ${ticketDate.sql}${openClause}
 GROUP BY status, priority
 ORDER BY ticket_count DESC`,
-            answer: `Largest ticket bucket is ${demo.tickets[0].status} / ${demo.tickets[0].priority} with ${demo.tickets[0].ticket_count} ticket(s).`
+            answer: rows.length ? `Largest ticket bucket is ${rows[0].status} / ${rows[0].priority} with ${rows[0].ticket_count} ticket(s).` : "No matching ticket rows."
           };
         }
 
         if (q.includes("attrition") || (q.includes("employee") && (q.includes("left") || q.includes("turnover")))) {
+          const rows = selectAttrition();
           return {
             route: "attrition_by_department",
             confidence: 0.96,
-            rows: demo.attrition,
+            rows,
+            tablesUsed: ["employees"],
+            period: "all demo dates",
             sql: `SELECT department, COUNT(*) AS employees_left
 FROM employees
 WHERE status = 'left'
 GROUP BY department
 ORDER BY employees_left DESC`,
-            answer: `Highest attrition is in ${demo.attrition[0].department} with ${demo.attrition[0].employees_left} employee(s) left.`
+            answer: rows.length ? `Highest attrition is in ${rows[0].department} with ${rows[0].employees_left} employee(s) left.` : "No attrition rows."
           };
         }
 
         if (q.includes("overdue") || (q.includes("invoice") && q.includes("open"))) {
+          const rows = selectOverdueInvoices(question);
           return {
             route: "overdue_invoices",
             confidence: 0.96,
-            rows: demo.invoices,
+            rows,
+            tablesUsed: ["invoices", "customers"],
+            period: "as of 2026-04-01",
             sql: `SELECT c.customer_name, c.segment, c.region,
        COUNT(*) AS overdue_invoice_count,
        ROUND(SUM(i.amount), 2) AS overdue_amount
 FROM invoices i
 JOIN customers c ON c.customer_id = i.customer_id
-WHERE ${invoiceDate}
-  AND i.status = 'open'
+WHERE i.status = 'open'
   AND i.due_date < '2026-04-01'
 GROUP BY c.customer_id, c.customer_name, c.segment, c.region
 ORDER BY overdue_amount DESC
 LIMIT 15`,
-            answer: `Largest overdue exposure is ${demo.invoices[0].customer_name} with ${demo.invoices[0].overdue_amount.toFixed(2)} overdue.`
+            answer: rows.length ? `Largest overdue exposure is ${rows[0].customer_name} with ${rows[0].overdue_amount.toFixed(2)} overdue.` : "No overdue invoice rows."
           };
         }
 
+        const rows = selectMonthlyRevenue(salesDate);
         return {
           route: "monthly_revenue_trend",
           confidence: 0.9,
-          rows: demo.monthly,
+          rows,
+          tablesUsed: ["sales_orders"],
+          period: salesDate.label,
           sql: `SELECT SUBSTR(order_date, 1, 7) AS month,
        ROUND(SUM(quantity * unit_price * (1 - discount_pct)), 2) AS revenue,
        COUNT(*) AS order_count
 FROM sales_orders
-WHERE ${salesDate}
+WHERE ${salesDate.sql}
 GROUP BY month
 ORDER BY month`,
-          answer: `Returned ${demo.monthly.length} monthly revenue point(s).`
+          answer: `Returned ${rows.length} monthly revenue point(s).`
         };
       }
 
-      function renderRows(rows) {
-        if (!rows.length) return "<p class=\"note\">No rows.</p>";
-        const cols = Object.keys(rows[0]);
-        return `<table><thead><tr>${cols.map((col) => `<th>${col}</th>`).join("")}</tr></thead><tbody>` +
-          rows.map((row) => `<tr>${cols.map((col) => `<td>${row[col]}</td>`).join("")}</tr>`).join("") +
-          "</tbody></table>";
-      }
-
       function renderChart(rows) {
-        if (!rows.length) return "";
-        const numericKey = Object.keys(rows[0]).find((key) => typeof rows[0][key] === "number" && key !== "order_count");
+        if (!rows.length) return "<p class=\"empty\">No chartable rows.</p>";
+        const numericKey = Object.keys(rows[0]).find((key) => typeof rows[0][key] === "number" && key !== "order_count" && !key.endsWith("_id"));
         const labelKey = Object.keys(rows[0]).find((key) => typeof rows[0][key] === "string");
-        if (!numericKey || !labelKey) return "<p class=\"note\">No chartable numeric column.</p>";
-        const max = Math.max(...rows.map((row) => row[numericKey]));
-        return rows.slice(0, 6).map((row) => {
+        if (!numericKey || !labelKey) return "<p class=\"empty\">No chartable numeric column.</p>";
+        const max = Math.max(...rows.map((row) => row[numericKey])) || 1;
+        return rows.slice(0, 8).map((row) => {
           const pct = Math.max(3, Math.round((row[numericKey] / max) * 100));
           return `<div class="barrow">
-            <span>${row[labelKey]}</span>
+            <span>${escapeHtml(row[labelKey])}</span>
             <span class="bartrack"><span class="bar" style="width:${pct}%"></span></span>
-            <span>${Number(row[numericKey]).toLocaleString()}</span>
+            <span>${formatValue(row[numericKey], numericKey)}</span>
           </div>`;
         }).join("");
       }
 
+      function renderTableButtons(tableNames) {
+        return tableNames.map((tableName) => `<button class="table-chip" type="button" data-open-table="${escapeHtml(tableName)}">${escapeHtml(tableName)}</button>`).join("");
+      }
+
+      function attachOpenTableButtons() {
+        document.querySelectorAll("[data-open-table]").forEach((button) => {
+          button.addEventListener("click", () => {
+            activeTable = button.dataset.openTable;
+            schemaFilter = "";
+            setView("schema");
+          });
+        });
+      }
+
       function run() {
         const started = performance.now();
-        const question = document.getElementById("question").value.trim();
+        const question = document.getElementById("question").value.trim() || "Show monthly revenue trend for 2025";
         const result = compile(question);
         const latency = Math.max(0.1, performance.now() - started);
         document.getElementById("answer").textContent = result.answer;
         document.getElementById("sqlOut").textContent = result.sql;
         document.getElementById("rows").innerHTML = renderRows(result.rows);
         document.getElementById("chart").innerHTML = renderChart(result.rows);
+        document.getElementById("lineageTitle").textContent = `Period: ${result.period}`;
+        document.getElementById("lineage").innerHTML = renderTableButtons(result.tablesUsed);
         document.getElementById("meta").innerHTML = [
-          `<span class="pill good">route: ${result.route}</span>`,
+          `<span class="pill good">route: ${escapeHtml(result.route)}</span>`,
           `<span class="pill good">confidence: ${result.confidence}</span>`,
           `<span class="pill">latency: ${latency.toFixed(1)} ms</span>`,
           `<span class="pill warn">mode: static compiler</span>`
         ].join("");
+        attachOpenTableButtons();
       }
 
       function renderExamples() {
-        document.getElementById("examples").innerHTML = examples.map((example) =>
-          `<button class="chip secondary" type="button" data-question="${example.replaceAll('"', "&quot;")}">${example}</button>`
-        ).join("");
-        document.querySelectorAll("[data-question]").forEach((button) => {
+        const root = document.getElementById("examples");
+        root.innerHTML = "";
+        examples.forEach((example) => {
+          const button = document.createElement("button");
+          button.className = "chip secondary";
+          button.type = "button";
+          button.textContent = example;
           button.addEventListener("click", () => {
-            document.getElementById("question").value = button.dataset.question;
+            document.getElementById("question").value = example;
             run();
+          });
+          root.appendChild(button);
+        });
+      }
+
+      function renderGlossary() {
+        document.getElementById("glossary").innerHTML = renderRows(glossary);
+      }
+
+      function renderSchemaTables() {
+        document.getElementById("schemaTables").innerHTML = schema.map((table) => {
+          const selected = table.name === activeTable ? "true" : "false";
+          return `<button class="table-option" type="button" data-schema-table="${escapeHtml(table.name)}" aria-selected="${selected}">
+            <span>
+              <span class="table-name">${escapeHtml(table.name)}</span>
+              <span class="table-meta">${escapeHtml(table.title)}</span>
+            </span>
+            <span class="count-badge">${tables[table.name].length}</span>
+          </button>`;
+        }).join("");
+        document.querySelectorAll("[data-schema-table]").forEach((button) => {
+          button.addEventListener("click", () => {
+            activeTable = button.dataset.schemaTable;
+            schemaFilter = "";
+            renderSchema();
           });
         });
       }
 
+      function filteredRows() {
+        const rows = tables[activeTable] || [];
+        const query = schemaFilter.trim().toLowerCase();
+        if (!query) return rows;
+        return rows.filter((row) => Object.values(row).some((value) => String(value ?? "NULL").toLowerCase().includes(query)));
+      }
+
+      function renderSampleRows() {
+        const rows = filteredRows();
+        const visibleCount = Math.min(rows.length, 12);
+        document.getElementById("sampleRows").innerHTML = renderRows(rows, { maxRows: 12 });
+        document.getElementById("sampleStatus").textContent = `${visibleCount} of ${rows.length} matching row(s)`;
+      }
+
+      function renderSchemaDetail() {
+        const table = schema.find((item) => item.name === activeTable) || schema[0];
+        document.getElementById("selectedTableTitle").textContent = table.name;
+        document.getElementById("selectedTableCaption").textContent = table.description;
+        document.getElementById("selectedTableCount").textContent = `${tables[table.name].length} rows`;
+        document.getElementById("columnTable").innerHTML = renderRows(
+          table.columns.map(([column, type, key, description]) => ({ column, type, key, description }))
+        );
+        document.getElementById("usedBy").innerHTML = table.usedBy.map((family) => `<span class="relation">${escapeHtml(family)}</span>`).join("");
+        const filter = document.getElementById("tableFilter");
+        filter.value = schemaFilter;
+        filter.oninput = (event) => {
+          schemaFilter = event.target.value;
+          renderSampleRows();
+        };
+        renderSampleRows();
+      }
+
+      function renderSchema() {
+        const totalRows = Object.values(tables).reduce((sum, rows) => sum + rows.length, 0);
+        document.getElementById("metricTables").textContent = schema.length;
+        document.getElementById("metricRows").textContent = totalRows;
+        document.getElementById("schemaSummary").textContent = `${schema.length} tables, ${totalRows} browser-visible sample rows, read-only query templates.`;
+        document.getElementById("relations").innerHTML = relationships.map((relation) => `<span class="relation">${escapeHtml(relation)}</span>`).join("");
+        renderSchemaTables();
+        renderSchemaDetail();
+        renderGlossary();
+      }
+
+      function viewFromHash() {
+        return location.hash === "#nlp" || location.hash === "#query" || location.hash === "#sql" ? "nlp" : "schema";
+      }
+
+      function setView(view, syncHash = true) {
+        activeView = view;
+        document.getElementById("schemaView").hidden = view !== "schema";
+        document.getElementById("nlpView").hidden = view !== "nlp";
+        document.getElementById("schemaTab").setAttribute("aria-pressed", String(view === "schema"));
+        document.getElementById("nlpTab").setAttribute("aria-pressed", String(view === "nlp"));
+        if (view === "schema") renderSchema();
+        if (view === "nlp") run();
+        const expectedHash = view === "nlp" ? "#nlp" : "#schema";
+        if (syncHash && location.hash !== expectedHash) {
+          history.pushState(null, "", expectedHash);
+        }
+      }
+
+      document.getElementById("schemaTab").addEventListener("click", () => setView("schema"));
+      document.getElementById("nlpTab").addEventListener("click", () => setView("nlp"));
       document.getElementById("runBtn").addEventListener("click", run);
       document.getElementById("question").addEventListener("keydown", (event) => {
         if (event.key === "Enter") run();
       });
+      window.addEventListener("hashchange", () => setView(viewFromHash(), false));
+
       renderExamples();
+      renderSchema();
       run();
+      setView(viewFromHash(), false);
     </script>
   </body>
 </html>
