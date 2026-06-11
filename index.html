@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DataTalk</title>
+    <meta
+      name="description"
+      content="DataTalk is a portfolio demo for natural-language company-data queries with compiled SQL, source rows, and latency."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --panel: #ffffff;
+        --ink: #111827;
+        --muted: #5b6472;
+        --line: #d9e1ea;
+        --accent: #176b87;
+        --accent-strong: #0f4c5c;
+        --green: #1f7a4d;
+        --amber: #a15c07;
+        --red: #b42318;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: #ffffff;
+      }
+
+      .wrap {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: var(--accent);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 800;
+        flex: 0 0 auto;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      .sub {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      a {
+        color: var(--accent-strong);
+        text-decoration: none;
+      }
+
+      .linkbtn {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--accent-strong);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      main {
+        padding: 22px 0 36px;
+      }
+
+      .querybar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      input,
+      button,
+      select {
+        font: inherit;
+      }
+
+      input,
+      select {
+        width: 100%;
+        height: 44px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: #fff;
+        color: var(--ink);
+        padding: 0 12px;
+      }
+
+      button {
+        min-height: 44px;
+        border: 1px solid var(--accent-strong);
+        background: var(--accent-strong);
+        color: white;
+        border-radius: 6px;
+        padding: 0 14px;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #ffffff;
+        color: var(--accent-strong);
+        border-color: #cbd5e1;
+      }
+
+      .examples {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 0 0 18px;
+      }
+
+      .chip {
+        min-height: 34px;
+        padding: 0 10px;
+        background: #ffffff;
+        color: #344054;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(330px, 0.9fr);
+        gap: 14px;
+        align-items: start;
+      }
+
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      section + section {
+        margin-top: 14px;
+      }
+
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 18px 0 8px;
+        font-size: 14px;
+        letter-spacing: 0;
+      }
+
+      .answer {
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .pill {
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        color: #374151;
+      }
+
+      .pill.good {
+        color: var(--green);
+        border-color: #b7dfc8;
+        background: #f1fbf5;
+      }
+
+      .pill.warn {
+        color: var(--amber);
+        border-color: #f3d5a7;
+        background: #fff8eb;
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow: auto;
+        background: #0f172a;
+        color: #e5e7eb;
+        border-radius: 6px;
+        padding: 14px;
+        line-height: 1.45;
+        font-size: 13px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f8fafc;
+        font-weight: 650;
+      }
+
+      .tablewrap {
+        overflow-x: auto;
+      }
+
+      .chart {
+        display: grid;
+        gap: 8px;
+      }
+
+      .barrow {
+        display: grid;
+        grid-template-columns: 88px minmax(120px, 1fr) 82px;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+      }
+
+      .bartrack {
+        height: 12px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .bar {
+        height: 100%;
+        background: var(--accent);
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+        margin: 10px 0 0;
+      }
+
+      .statusline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .metric {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 860px) {
+        .grid,
+        .querybar,
+        .statusline {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 14px 0;
+        }
+
+        nav {
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap topbar">
+        <div class="brand">
+          <div class="mark">DT</div>
+          <div>
+            <h1>DataTalk</h1>
+            <p class="sub">Natural-language company data queries with compiled SQL and grounded rows.</p>
+          </div>
+        </div>
+        <nav>
+          <a class="linkbtn" href="https://github.com/darshdevlab/DataTalk" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="linkbtn" href="#sql">SQL</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="statusline" aria-label="Demo status">
+        <div class="metric"><strong>8</strong><span>supported query families</span></div>
+        <div class="metric"><strong>safe</strong><span>read-only SQL templates</span></div>
+        <div class="metric"><strong>0</strong><span>browser secrets</span></div>
+        <div class="metric"><strong>static</strong><span>GitHub Pages demo</span></div>
+      </div>
+
+      <div class="querybar">
+        <input id="question" aria-label="Question" value="Show revenue by region for 2025" />
+        <button id="runBtn" type="button">Run Query</button>
+      </div>
+
+      <div class="examples" id="examples"></div>
+
+      <div class="grid">
+        <div>
+          <section>
+            <h2>Answer</h2>
+            <div id="meta" class="meta"></div>
+            <p id="answer" class="answer"></p>
+            <h3>Source Rows</h3>
+            <div id="rows" class="tablewrap"></div>
+          </section>
+
+          <section>
+            <h2>Visual Check</h2>
+            <div id="chart" class="chart"></div>
+            <p class="note">This public page uses embedded demo data. The trained T5 checkpoint stays out of GitHub; a separate model API can be connected later without exposing tokens.</p>
+          </section>
+        </div>
+
+        <div>
+          <section id="sql">
+            <h2>Compiled SQL</h2>
+            <pre id="sqlOut"></pre>
+          </section>
+
+          <section>
+            <h2>Deployment Boundary</h2>
+            <p class="note">
+              GitHub Pages hosts this static UI. No API keys, write tokens, train data, validation data, SQLite artifact, or model weights are shipped in the browser.
+            </p>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const demo = {
+        revenueByRegion: [
+          { region: "South", revenue: 622766.44 },
+          { region: "West", revenue: 536683.17 },
+          { region: "North", revenue: 491520.79 },
+          { region: "Central", revenue: 481067.11 },
+          { region: "East", revenue: 365293.36 }
+        ],
+        topProducts: [
+          { product_name: "DataTalk Pro", category: "Analytics", revenue: 812440.15, units_sold: 621 },
+          { product_name: "Retention Radar", category: "Customer Success", revenue: 604210.32, units_sold: 428 },
+          { product_name: "Forecast API", category: "Finance", revenue: 501880.75, units_sold: 392 },
+          { product_name: "DataTalk Core", category: "Analytics", revenue: 376950.08, units_sold: 355 }
+        ],
+        topCustomers: [
+          { customer_name: "Customer 014", segment: "enterprise", region: "South", revenue: 118920.4 },
+          { customer_name: "Customer 057", segment: "mid-market", region: "West", revenue: 104220.8 },
+          { customer_name: "Customer 023", segment: "enterprise", region: "North", revenue: 99810.2 }
+        ],
+        churn: [
+          { customer_name: "Customer 071", segment: "enterprise", region: "West", risky_ticket_count: 5, worst_sentiment: 1, issue_types: "bug,performance" },
+          { customer_name: "Customer 006", segment: "mid-market", region: "South", risky_ticket_count: 4, worst_sentiment: 1, issue_types: "billing,training" }
+        ],
+        tickets: [
+          { status: "open", priority: "critical", ticket_count: 24, avg_sentiment: 1.8 },
+          { status: "in_progress", priority: "high", ticket_count: 31, avg_sentiment: 2.4 },
+          { status: "open", priority: "medium", ticket_count: 46, avg_sentiment: 3.1 }
+        ],
+        attrition: [
+          { department: "Support", employees_left: 7 },
+          { department: "Sales", employees_left: 5 },
+          { department: "Engineering", employees_left: 3 }
+        ],
+        invoices: [
+          { customer_name: "Customer 044", segment: "enterprise", region: "Central", overdue_invoice_count: 4, overdue_amount: 74210.5 },
+          { customer_name: "Customer 019", segment: "mid-market", region: "East", overdue_invoice_count: 3, overdue_amount: 38940.75 }
+        ],
+        monthly: [
+          { month: "2025-01", revenue: 178210.4, order_count: 93 },
+          { month: "2025-02", revenue: 188911.2, order_count: 96 },
+          { month: "2025-03", revenue: 205102.8, order_count: 99 },
+          { month: "2025-04", revenue: 196450.7, order_count: 94 },
+          { month: "2025-05", revenue: 215410.5, order_count: 101 }
+        ]
+      };
+
+      const examples = [
+        "Show revenue by region for 2025",
+        "Top products by revenue for Q1",
+        "Top customers by spend for 2026",
+        "Find churn risk tickets for Q4",
+        "Show open support tickets by priority",
+        "Employee attrition by department",
+        "Show overdue invoices",
+        "Show monthly revenue trend for 2025"
+      ];
+
+      function dateFilter(question, column) {
+        const q = question.toLowerCase();
+        if (q.includes("q1") || q.includes("quarter 1")) return `${column} BETWEEN '2026-01-01' AND '2026-03-31'`;
+        if (q.includes("q2")) return `${column} BETWEEN '2025-04-01' AND '2025-06-30'`;
+        if (q.includes("q3")) return `${column} BETWEEN '2025-07-01' AND '2025-09-30'`;
+        if (q.includes("q4")) return `${column} BETWEEN '2025-10-01' AND '2025-12-31'`;
+        if (q.includes("2026")) return `${column} BETWEEN '2026-01-01' AND '2026-12-31'`;
+        return `${column} BETWEEN '2025-01-01' AND '2025-12-31'`;
+      }
+
+      function compile(question) {
+        const q = question.toLowerCase();
+        const salesDate = dateFilter(question, "order_date");
+        const ticketDate = dateFilter(question, "opened_date");
+        const invoiceDate = dateFilter(question, "due_date");
+
+        if (q.includes("revenue") && q.includes("region")) {
+          return {
+            route: "revenue_by_region",
+            confidence: 0.96,
+            rows: demo.revenueByRegion,
+            sql: `SELECT region, ROUND(SUM(quantity * unit_price * (1 - discount_pct)), 2) AS revenue
+FROM sales_orders
+WHERE ${salesDate}
+GROUP BY region
+ORDER BY revenue DESC`,
+            answer: `Top region is ${demo.revenueByRegion[0].region} with revenue ${demo.revenueByRegion[0].revenue.toFixed(2)}.`
+          };
+        }
+
+        if ((q.includes("top product") || q.includes("best product")) && q.includes("revenue")) {
+          return {
+            route: "top_products",
+            confidence: 0.96,
+            rows: demo.topProducts,
+            sql: `SELECT p.product_name, p.category,
+       ROUND(SUM(s.quantity * s.unit_price * (1 - s.discount_pct)), 2) AS revenue,
+       SUM(s.quantity) AS units_sold
+FROM sales_orders s
+JOIN products p ON p.product_id = s.product_id
+WHERE ${salesDate}
+GROUP BY p.product_id, p.product_name, p.category
+ORDER BY revenue DESC
+LIMIT 10`,
+            answer: `Top product is ${demo.topProducts[0].product_name} with revenue ${demo.topProducts[0].revenue.toFixed(2)}.`
+          };
+        }
+
+        if (q.includes("customer") && (q.includes("spend") || q.includes("sales") || q.includes("revenue"))) {
+          return {
+            route: "customer_revenue",
+            confidence: 0.96,
+            rows: demo.topCustomers,
+            sql: `SELECT c.customer_name, c.segment, c.region,
+       ROUND(SUM(s.quantity * s.unit_price * (1 - s.discount_pct)), 2) AS revenue
+FROM sales_orders s
+JOIN customers c ON c.customer_id = s.customer_id
+WHERE ${salesDate}
+GROUP BY c.customer_id, c.customer_name, c.segment, c.region
+ORDER BY revenue DESC
+LIMIT 15`,
+            answer: `Top customer is ${demo.topCustomers[0].customer_name} with revenue ${demo.topCustomers[0].revenue.toFixed(2)}.`
+          };
+        }
+
+        if (q.includes("churn") || (q.includes("risk") && q.includes("ticket"))) {
+          return {
+            route: "churn_risk_tickets",
+            confidence: 0.96,
+            rows: demo.churn,
+            sql: `SELECT c.customer_name, c.segment, c.region,
+       COUNT(*) AS risky_ticket_count,
+       MIN(t.sentiment_score) AS worst_sentiment,
+       GROUP_CONCAT(DISTINCT t.issue_type) AS issue_types
+FROM support_tickets t
+JOIN customers c ON c.customer_id = t.customer_id
+WHERE ${ticketDate}
+  AND t.status != 'closed'
+  AND (t.priority IN ('high', 'critical') OR t.sentiment_score <= 2)
+GROUP BY c.customer_id, c.customer_name, c.segment, c.region
+ORDER BY risky_ticket_count DESC, worst_sentiment ASC
+LIMIT 15`,
+            answer: `Highest churn-risk customer is ${demo.churn[0].customer_name} with ${demo.churn[0].risky_ticket_count} risky ticket(s).`
+          };
+        }
+
+        if (q.includes("ticket")) {
+          return {
+            route: "tickets_by_status_priority",
+            confidence: 0.96,
+            rows: demo.tickets,
+            sql: `SELECT status, priority, COUNT(*) AS ticket_count, ROUND(AVG(sentiment_score), 2) AS avg_sentiment
+FROM support_tickets
+WHERE ${ticketDate}
+GROUP BY status, priority
+ORDER BY ticket_count DESC`,
+            answer: `Largest ticket bucket is ${demo.tickets[0].status} / ${demo.tickets[0].priority} with ${demo.tickets[0].ticket_count} ticket(s).`
+          };
+        }
+
+        if (q.includes("attrition") || (q.includes("employee") && (q.includes("left") || q.includes("turnover")))) {
+          return {
+            route: "attrition_by_department",
+            confidence: 0.96,
+            rows: demo.attrition,
+            sql: `SELECT department, COUNT(*) AS employees_left
+FROM employees
+WHERE status = 'left'
+GROUP BY department
+ORDER BY employees_left DESC`,
+            answer: `Highest attrition is in ${demo.attrition[0].department} with ${demo.attrition[0].employees_left} employee(s) left.`
+          };
+        }
+
+        if (q.includes("overdue") || (q.includes("invoice") && q.includes("open"))) {
+          return {
+            route: "overdue_invoices",
+            confidence: 0.96,
+            rows: demo.invoices,
+            sql: `SELECT c.customer_name, c.segment, c.region,
+       COUNT(*) AS overdue_invoice_count,
+       ROUND(SUM(i.amount), 2) AS overdue_amount
+FROM invoices i
+JOIN customers c ON c.customer_id = i.customer_id
+WHERE ${invoiceDate}
+  AND i.status = 'open'
+  AND i.due_date < '2026-04-01'
+GROUP BY c.customer_id, c.customer_name, c.segment, c.region
+ORDER BY overdue_amount DESC
+LIMIT 15`,
+            answer: `Largest overdue exposure is ${demo.invoices[0].customer_name} with ${demo.invoices[0].overdue_amount.toFixed(2)} overdue.`
+          };
+        }
+
+        return {
+          route: "monthly_revenue_trend",
+          confidence: 0.9,
+          rows: demo.monthly,
+          sql: `SELECT SUBSTR(order_date, 1, 7) AS month,
+       ROUND(SUM(quantity * unit_price * (1 - discount_pct)), 2) AS revenue,
+       COUNT(*) AS order_count
+FROM sales_orders
+WHERE ${salesDate}
+GROUP BY month
+ORDER BY month`,
+          answer: `Returned ${demo.monthly.length} monthly revenue point(s).`
+        };
+      }
+
+      function renderRows(rows) {
+        if (!rows.length) return "<p class=\"note\">No rows.</p>";
+        const cols = Object.keys(rows[0]);
+        return `<table><thead><tr>${cols.map((col) => `<th>${col}</th>`).join("")}</tr></thead><tbody>` +
+          rows.map((row) => `<tr>${cols.map((col) => `<td>${row[col]}</td>`).join("")}</tr>`).join("") +
+          "</tbody></table>";
+      }
+
+      function renderChart(rows) {
+        if (!rows.length) return "";
+        const numericKey = Object.keys(rows[0]).find((key) => typeof rows[0][key] === "number" && key !== "order_count");
+        const labelKey = Object.keys(rows[0]).find((key) => typeof rows[0][key] === "string");
+        if (!numericKey || !labelKey) return "<p class=\"note\">No chartable numeric column.</p>";
+        const max = Math.max(...rows.map((row) => row[numericKey]));
+        return rows.slice(0, 6).map((row) => {
+          const pct = Math.max(3, Math.round((row[numericKey] / max) * 100));
+          return `<div class="barrow">
+            <span>${row[labelKey]}</span>
+            <span class="bartrack"><span class="bar" style="width:${pct}%"></span></span>
+            <span>${Number(row[numericKey]).toLocaleString()}</span>
+          </div>`;
+        }).join("");
+      }
+
+      function run() {
+        const started = performance.now();
+        const question = document.getElementById("question").value.trim();
+        const result = compile(question);
+        const latency = Math.max(0.1, performance.now() - started);
+        document.getElementById("answer").textContent = result.answer;
+        document.getElementById("sqlOut").textContent = result.sql;
+        document.getElementById("rows").innerHTML = renderRows(result.rows);
+        document.getElementById("chart").innerHTML = renderChart(result.rows);
+        document.getElementById("meta").innerHTML = [
+          `<span class="pill good">route: ${result.route}</span>`,
+          `<span class="pill good">confidence: ${result.confidence}</span>`,
+          `<span class="pill">latency: ${latency.toFixed(1)} ms</span>`,
+          `<span class="pill warn">mode: static compiler</span>`
+        ].join("");
+      }
+
+      function renderExamples() {
+        document.getElementById("examples").innerHTML = examples.map((example) =>
+          `<button class="chip secondary" type="button" data-question="${example.replaceAll('"', "&quot;")}">${example}</button>`
+        ).join("");
+        document.querySelectorAll("[data-question]").forEach((button) => {
+          button.addEventListener("click", () => {
+            document.getElementById("question").value = button.dataset.question;
+            run();
+          });
+        });
+      }
+
+      document.getElementById("runBtn").addEventListener("click", run);
+      document.getElementById("question").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") run();
+      });
+      renderExamples();
+      run();
+    </script>
+  </body>
+</html>

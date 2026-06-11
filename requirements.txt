@@ -1,0 +1,4 @@
+# The reference router, SQLite database, CLI, benchmark, and stdlib web UI use
+# only Python standard-library modules.
+#
+# Install requirements-train.txt only when fine-tuning or running a trained SLM.

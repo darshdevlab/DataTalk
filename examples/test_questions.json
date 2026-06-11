@@ -1,0 +1,30 @@
+[
+  {
+    "question": "Show revenue by region for 2025",
+    "expected_route": "revenue_by_region"
+  },
+  {
+    "question": "Top products by revenue for Q1",
+    "expected_route": "top_products"
+  },
+  {
+    "question": "Show overdue invoices",
+    "expected_route": "overdue_invoices"
+  },
+  {
+    "question": "Find churn risk tickets for Q4",
+    "expected_route": "churn_risk_tickets"
+  },
+  {
+    "question": "Show monthly revenue trend for 2025",
+    "expected_route": "monthly_revenue_trend"
+  },
+  {
+    "question": "Show active learners by organization",
+    "expected_route": "lms_active_learners_by_org"
+  },
+  {
+    "question": "Show course engagement by device type",
+    "expected_route": "lms_course_engagement_by_device"
+  }
+]
