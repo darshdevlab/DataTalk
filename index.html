@@ -536,6 +536,29 @@
         gap: 3px;
       }
 
+      .chat-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .clear-chat-button {
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 7px 10px;
+        font-weight: 750;
+      }
+
+      .clear-chat-button:hover {
+        border-color: var(--accent);
+        color: var(--accent-strong);
+      }
+
       .chat-messages {
         flex: 1;
         min-height: 0;
@@ -941,7 +964,10 @@
               <h2>DataTalk Chat</h2>
               <span class="caption">Ask over the visible demo schema.</span>
             </div>
-            <span class="pill warn">mode: static compiler</span>
+            <div class="chat-actions">
+              <button id="clearChatBtn" class="clear-chat-button" type="button">Clear Chat</button>
+              <span class="pill warn">mode: static compiler</span>
+            </div>
           </div>
 
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
@@ -1203,6 +1229,7 @@
       let activeView = "schema";
       let chatStarted = false;
       let isProcessing = false;
+      let pendingQueryTimer = null;
 
       function escapeHtml(value) {
         return String(value)
@@ -2052,6 +2079,20 @@ ORDER BY month`,
           <p class="note">Example: show customers in South just show customer_id</p>`);
       }
 
+      function clearChat() {
+        if (pendingQueryTimer) {
+          window.clearTimeout(pendingQueryTimer);
+          pendingQueryTimer = null;
+        }
+        document.getElementById("chatMessages").innerHTML = "";
+        chatStarted = false;
+        setComposerBusy(false);
+        initChat();
+        const input = document.getElementById("question");
+        input.value = "";
+        input.focus();
+      }
+
       function selectExampleQuery(question) {
         const input = document.getElementById("question");
         input.value = question;
@@ -2070,10 +2111,11 @@ ORDER BY month`,
         const processing = appendChatMessage("assistant processing", renderProcessingMessage(question));
         setComposerBusy(true);
 
-        window.setTimeout(() => {
+        pendingQueryTimer = window.setTimeout(() => {
           const started = performance.now();
           const result = compile(question);
           const latency = Math.max(0.1, performance.now() - started);
+          pendingQueryTimer = null;
           processing.className = "chat-message assistant";
           processing.querySelector(".chat-bubble").innerHTML = renderChatResult(result, latency);
           attachOpenTableButtons(processing);
@@ -2217,6 +2259,7 @@ ORDER BY month`,
 
       document.getElementById("schemaTab").addEventListener("click", () => setView("schema"));
       document.getElementById("nlpTab").addEventListener("click", () => setView("nlp"));
+      document.getElementById("clearChatBtn").addEventListener("click", clearChat);
       document.getElementById("chatForm").addEventListener("submit", (event) => {
         event.preventDefault();
         run();
