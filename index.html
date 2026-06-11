@@ -240,6 +240,120 @@
         line-height: 1.45;
       }
 
+      .schema-map {
+        margin-bottom: 14px;
+      }
+
+      .map-stage {
+        position: relative;
+        min-height: 420px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfdff;
+      }
+
+      .map-stage svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .map-line {
+        fill: none;
+        stroke: #7a93a8;
+        stroke-width: 2.2;
+      }
+
+      .map-line.faint {
+        stroke: #c2cfda;
+      }
+
+      .map-label {
+        fill: #475467;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .map-node {
+        position: absolute;
+        width: 192px;
+        min-height: 88px;
+        display: grid;
+        gap: 4px;
+        align-content: start;
+        border: 1px solid #b9c8d6;
+        background: #ffffff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 10px 12px;
+        text-align: left;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      }
+
+      .map-node[aria-pressed="true"] {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14), 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .map-role {
+        color: var(--accent-strong);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .map-table {
+        font-weight: 800;
+        overflow-wrap: anywhere;
+      }
+
+      .map-fields {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .map-node[data-table="sales_orders"] {
+        left: calc(50% - 96px);
+        top: 38px;
+      }
+
+      .map-node[data-table="customers"] {
+        left: 42px;
+        top: 168px;
+      }
+
+      .map-node[data-table="products"] {
+        right: 42px;
+        top: 168px;
+      }
+
+      .map-node[data-table="support_tickets"] {
+        left: calc(50% - 96px);
+        top: 245px;
+      }
+
+      .map-node[data-table="invoices"] {
+        left: 76px;
+        bottom: 28px;
+      }
+
+      .map-node[data-table="employees"] {
+        right: 76px;
+        bottom: 28px;
+      }
+
+      .map-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
       .schema-layout {
         display: grid;
         grid-template-columns: 280px minmax(0, 1fr);
@@ -513,6 +627,29 @@
         .barrow {
           grid-template-columns: 96px minmax(80px, 1fr) 84px;
         }
+
+        .map-stage {
+          min-height: auto;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+          padding: 10px;
+        }
+
+        .map-stage svg {
+          display: none;
+        }
+
+        .map-node,
+        .map-node[data-table="sales_orders"],
+        .map-node[data-table="customers"],
+        .map-node[data-table="products"],
+        .map-node[data-table="support_tickets"],
+        .map-node[data-table="invoices"],
+        .map-node[data-table="employees"] {
+          position: static;
+          width: 100%;
+        }
       }
     </style>
   </head>
@@ -554,6 +691,20 @@
               <span id="schemaSummary" class="caption"></span>
             </div>
             <div id="relations" class="relation-strip" aria-label="Relationships"></div>
+          </div>
+
+          <div class="schema-map" aria-label="Schema HLD view">
+            <div class="section-head">
+              <div class="section-title">
+                <h2>HLD Schema Map</h2>
+                <span class="caption">Business dimensions connect to sales, support, billing, and people analytics tables.</span>
+              </div>
+            </div>
+            <div id="schemaMap" class="map-stage"></div>
+            <div class="map-legend">
+              <span class="relation">FK line = table relationship</span>
+              <span class="relation">Selected node = table data shown below</span>
+            </div>
           </div>
 
           <div class="schema-layout">
@@ -835,6 +986,23 @@
         "support_tickets.customer_id -> customers.customer_id",
         "support_tickets.product_id -> products.product_id",
         "invoices.customer_id -> customers.customer_id"
+      ];
+
+      const schemaMapNodes = [
+        { table: "sales_orders", role: "Fact", fields: "order_id, customer_id, product_id, revenue inputs" },
+        { table: "customers", role: "Dimension", fields: "customer_id, segment, region, industry" },
+        { table: "products", role: "Dimension", fields: "product_id, category, list_price" },
+        { table: "support_tickets", role: "Event", fields: "ticket_id, priority, status, sentiment_score" },
+        { table: "invoices", role: "Billing", fields: "invoice_id, customer_id, due_date, amount" },
+        { table: "employees", role: "People", fields: "employee_id, department, status, left_date" }
+      ];
+
+      const schemaMapEdges = [
+        { from: "sales_orders", to: "customers", label: "customer_id", path: "M 445 82 C 330 105 245 145 190 178", labelX: 310, labelY: 112 },
+        { from: "sales_orders", to: "products", label: "product_id", path: "M 555 82 C 670 105 755 145 810 178", labelX: 650, labelY: 112 },
+        { from: "support_tickets", to: "customers", label: "customer_id", path: "M 445 286 C 330 268 250 225 190 216", labelX: 292, labelY: 266 },
+        { from: "support_tickets", to: "products", label: "product_id", path: "M 555 286 C 670 268 750 225 810 216", labelX: 645, labelY: 266 },
+        { from: "invoices", to: "customers", label: "customer_id", path: "M 175 338 C 150 302 150 260 172 225", labelX: 80, labelY: 292 }
       ];
 
       const glossary = [
@@ -1239,6 +1407,12 @@ ORDER BY month`,
         return tableNames.map((tableName) => `<button class="table-chip" type="button" data-open-table="${escapeHtml(tableName)}">${escapeHtml(tableName)}</button>`).join("");
       }
 
+      function selectSchemaTable(tableName) {
+        activeTable = tableName;
+        schemaFilter = "";
+        renderSchema();
+      }
+
       function attachOpenTableButtons() {
         document.querySelectorAll("[data-open-table]").forEach((button) => {
           button.addEventListener("click", () => {
@@ -1289,6 +1463,37 @@ ORDER BY month`,
         document.getElementById("glossary").innerHTML = renderRows(glossary);
       }
 
+      function renderSchemaMap() {
+        const edgeMarkup = schemaMapEdges.map((edge) => {
+          const isActive = edge.from === activeTable || edge.to === activeTable;
+          const lineClass = isActive ? "map-line" : "map-line faint";
+          return `<path class="${lineClass}" d="${edge.path}" marker-end="url(#mapArrow)" />
+            <text class="map-label" x="${edge.labelX}" y="${edge.labelY}">${escapeHtml(edge.label)}</text>`;
+        }).join("");
+        const nodesMarkup = schemaMapNodes.map((node) => {
+          const rowCount = tables[node.table]?.length || 0;
+          return `<button class="map-node" type="button" data-table="${escapeHtml(node.table)}" data-map-table="${escapeHtml(node.table)}" aria-pressed="${node.table === activeTable}">
+            <span class="map-role">${escapeHtml(node.role)}</span>
+            <span class="map-table">${escapeHtml(node.table)}</span>
+            <span class="map-fields">${escapeHtml(node.fields)}</span>
+            <span class="count-badge">${rowCount} rows</span>
+          </button>`;
+        }).join("");
+
+        document.getElementById("schemaMap").innerHTML = `<svg viewBox="0 0 1000 420" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <marker id="mapArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a93a8"></path>
+            </marker>
+          </defs>
+          ${edgeMarkup}
+        </svg>${nodesMarkup}`;
+
+        document.querySelectorAll("[data-map-table]").forEach((button) => {
+          button.addEventListener("click", () => selectSchemaTable(button.dataset.mapTable));
+        });
+      }
+
       function renderSchemaTables() {
         document.getElementById("schemaTables").innerHTML = schema.map((table) => {
           const selected = table.name === activeTable ? "true" : "false";
@@ -1302,9 +1507,7 @@ ORDER BY month`,
         }).join("");
         document.querySelectorAll("[data-schema-table]").forEach((button) => {
           button.addEventListener("click", () => {
-            activeTable = button.dataset.schemaTable;
-            schemaFilter = "";
-            renderSchema();
+            selectSchemaTable(button.dataset.schemaTable);
           });
         });
       }
@@ -1347,6 +1550,7 @@ ORDER BY month`,
         document.getElementById("metricRows").textContent = totalRows;
         document.getElementById("schemaSummary").textContent = `${schema.length} tables, ${totalRows} browser-visible sample rows, read-only query templates.`;
         document.getElementById("relations").innerHTML = relationships.map((relation) => `<span class="relation">${escapeHtml(relation)}</span>`).join("");
+        renderSchemaMap();
         renderSchemaTables();
         renderSchemaDetail();
         renderGlossary();
