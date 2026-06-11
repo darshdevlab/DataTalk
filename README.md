@@ -58,6 +58,12 @@ The repository also includes a static GitHub Pages demo in `index.html`. It runs
 the supported intent compiler in browser JavaScript using embedded demo rows, so
 there are no browser secrets and no backend token is required.
 
+Live demo:
+
+```text
+https://darshdevlab.github.io/DataTalk/
+```
+
 Local preview:
 
 ```bash
