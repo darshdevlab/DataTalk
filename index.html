@@ -1016,6 +1016,10 @@
       const examples = [
         "Show revenue by region for 2025",
         "Top products by revenue for Q1",
+        "Show customers in South",
+        "List critical open tickets",
+        "Show open invoices",
+        "Count sales orders by channel",
         "Top customers by spend for 2026",
         "Find churn risk tickets for Q4",
         "Show open support tickets by priority",
@@ -1026,6 +1030,14 @@
 
       const customerById = Object.fromEntries(tables.customers.map((row) => [row.customer_id, row]));
       const productById = Object.fromEntries(tables.products.map((row) => [row.product_id, row]));
+      const regions = ["North", "South", "East", "West", "Central"];
+      const segments = ["startup", "mid-market", "enterprise"];
+      const industries = ["healthcare", "finance", "retail", "manufacturing", "education", "software"];
+      const productCategories = ["Analytics", "Customer Success", "Finance", "Support"];
+      const channels = ["direct", "partner", "marketplace", "inside_sales"];
+      const priorities = ["low", "medium", "high", "critical"];
+      const statuses = ["open", "pending", "closed", "paid", "active", "left"];
+      const departments = ["Sales", "Support", "Engineering", "Finance", "Marketing", "Operations"];
       let activeTable = "sales_orders";
       let schemaFilter = "";
       let activeView = "schema";
@@ -1071,6 +1083,20 @@
         return question.toLowerCase().trim();
       }
 
+      function hasWord(question, word) {
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[-_ ]");
+        return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i").test(question);
+      }
+
+      function hasAnyWord(question, words) {
+        return words.some((word) => hasWord(question, word));
+      }
+
+      function hasDateHint(question) {
+        const q = normalize(question);
+        return q.includes("2025") || q.includes("2026") || q.includes("q1") || q.includes("q2") || q.includes("q3") || q.includes("q4") || q.includes("quarter");
+      }
+
       function dateRange(question, column) {
         const q = normalize(question);
         const explicitYear = q.includes("2026") ? "2026" : q.includes("2025") ? "2025" : null;
@@ -1100,6 +1126,340 @@
 
       function sortDesc(rows, key) {
         return rows.sort((a, b) => b[key] - a[key]);
+      }
+
+      function detectTableIntent(question) {
+        const q = normalize(question);
+        if (hasAnyWord(q, ["sales_orders", "sales order", "sales orders", "order", "orders", "sale", "sales"])) return "sales_orders";
+        if (hasAnyWord(q, ["support_tickets", "support ticket", "support tickets", "ticket", "tickets"])) return "support_tickets";
+        if (hasAnyWord(q, ["invoice", "invoices", "billing", "bill"])) return "invoices";
+        if (hasAnyWord(q, ["customer", "customers", "account", "accounts"])) return "customers";
+        if (hasAnyWord(q, ["product", "products", "catalog"])) return "products";
+        if (hasAnyWord(q, ["employee", "employees", "staff", "people"])) return "employees";
+        return null;
+      }
+
+      function filterSql(tableName, filter) {
+        const alias = {
+          customers: "c",
+          products: "p",
+          sales_orders: "s",
+          support_tickets: "t",
+          invoices: "i",
+          employees: "e"
+        }[tableName];
+        const customerAlias = ["sales_orders", "support_tickets", "invoices"].includes(tableName) ? "c" : alias;
+        const productAlias = ["sales_orders", "support_tickets"].includes(tableName) ? "p" : alias;
+        if (filter.kind === "date") return `${alias}.${filter.column} BETWEEN '${filter.start}' AND '${filter.end}'`;
+        if (filter.kind === "region") return `${customerAlias}.region = '${filter.value}'`;
+        if (filter.kind === "segment") return `${customerAlias}.segment = '${filter.value}'`;
+        if (filter.kind === "industry") return `${customerAlias}.industry = '${filter.value}'`;
+        if (filter.kind === "category") return `${productAlias}.category = '${filter.value}'`;
+        if (filter.kind === "status") return `${alias}.status = '${filter.value}'`;
+        if (filter.kind === "priority") return `t.priority = '${filter.value}'`;
+        if (filter.kind === "channel") return `s.channel = '${filter.value}'`;
+        if (filter.kind === "department") return `e.department = '${filter.value}'`;
+        return "1 = 1";
+      }
+
+      function canUseFilter(tableName, kind) {
+        const allowed = {
+          region: ["customers", "sales_orders", "support_tickets", "invoices", "employees"],
+          segment: ["customers", "sales_orders", "support_tickets", "invoices"],
+          industry: ["customers", "sales_orders", "support_tickets", "invoices"],
+          category: ["products", "sales_orders", "support_tickets"],
+          status: ["support_tickets", "invoices", "employees"],
+          priority: ["support_tickets"],
+          channel: ["sales_orders"],
+          department: ["employees"],
+          date: ["sales_orders", "support_tickets", "invoices", "employees", "customers"]
+        };
+        return allowed[kind]?.includes(tableName);
+      }
+
+      function buildTableFilters(question, tableName) {
+        const q = normalize(question);
+        const filters = [];
+        const addFilter = (filter) => {
+          if (canUseFilter(tableName, filter.kind)) filters.push(filter);
+        };
+        regions.forEach((region) => {
+          if (hasWord(q, region.toLowerCase())) {
+            addFilter({
+              kind: "region",
+              value: region,
+              test: (row) => (row.region || customerById[row.customer_id]?.region) === region
+            });
+          }
+        });
+        segments.forEach((segment) => {
+          if (q.includes(segment) || q.includes(segment.replace("-", " "))) {
+            addFilter({
+              kind: "segment",
+              value: segment,
+              test: (row) => (row.segment || customerById[row.customer_id]?.segment) === segment
+            });
+          }
+        });
+        industries.forEach((industry) => {
+          if (hasWord(q, industry)) {
+            addFilter({
+              kind: "industry",
+              value: industry,
+              test: (row) => (row.industry || customerById[row.customer_id]?.industry) === industry
+            });
+          }
+        });
+        productCategories.forEach((category) => {
+          const normalized = category.toLowerCase();
+          if (q.includes(normalized) || q.includes(normalized.replace(" ", "-"))) {
+            addFilter({
+              kind: "category",
+              value: category,
+              test: (row) => (row.category || productById[row.product_id]?.category) === category
+            });
+          }
+        });
+        channels.forEach((channel) => {
+          if (q.includes(channel) || q.includes(channel.replace("_", " "))) {
+            addFilter({ kind: "channel", value: channel, test: (row) => row.channel === channel });
+          }
+        });
+        priorities.forEach((priority) => {
+          if (hasWord(q, priority)) {
+            addFilter({ kind: "priority", value: priority, test: (row) => row.priority === priority });
+          }
+        });
+        statuses.forEach((status) => {
+          if (hasWord(q, status)) {
+            addFilter({ kind: "status", value: status, test: (row) => row.status === status });
+          }
+        });
+        departments.forEach((department) => {
+          if (hasWord(q, department.toLowerCase())) {
+            addFilter({ kind: "department", value: department, test: (row) => row.department === department });
+          }
+        });
+        if (hasDateHint(q)) {
+          const dateColumn = {
+            customers: "joined_date",
+            sales_orders: "order_date",
+            support_tickets: "opened_date",
+            invoices: "due_date",
+            employees: "hire_date"
+          }[tableName];
+          if (dateColumn) {
+            const range = dateRange(question, dateColumn);
+            addFilter({
+              kind: "date",
+              column: dateColumn,
+              start: range.start,
+              end: range.end,
+              label: range.label,
+              test: (row) => between(row[dateColumn], range)
+            });
+          }
+        }
+        return filters;
+      }
+
+      function tableRows(tableName, question) {
+        const filters = buildTableFilters(question, tableName);
+        const rawRows = (tables[tableName] || []).filter((row) => filters.every((filter) => filter.test(row)));
+        const rows = rawRows.map((row) => {
+          if (tableName === "sales_orders") {
+            const customer = customerById[row.customer_id];
+            const product = productById[row.product_id];
+            return {
+              order_id: row.order_id,
+              order_date: row.order_date,
+              customer_name: customer?.customer_name || row.customer_id,
+              product_name: product?.product_name || row.product_id,
+              region: row.region,
+              channel: row.channel,
+              quantity: row.quantity,
+              revenue: revenue(row)
+            };
+          }
+          if (tableName === "support_tickets") {
+            const customer = customerById[row.customer_id];
+            const product = productById[row.product_id];
+            return {
+              ticket_id: row.ticket_id,
+              opened_date: row.opened_date,
+              customer_name: customer?.customer_name || row.customer_id,
+              product_name: product?.product_name || row.product_id,
+              priority: row.priority,
+              status: row.status,
+              sentiment_score: row.sentiment_score,
+              issue_type: row.issue_type
+            };
+          }
+          if (tableName === "invoices") {
+            const customer = customerById[row.customer_id];
+            return {
+              invoice_id: row.invoice_id,
+              customer_name: customer?.customer_name || row.customer_id,
+              due_date: row.due_date,
+              amount: row.amount,
+              status: row.status,
+              paid_date: row.paid_date
+            };
+          }
+          return row;
+        });
+        return { rows, filters };
+      }
+
+      function tableFromSql(tableName) {
+        if (tableName === "sales_orders") {
+          return `FROM sales_orders s
+JOIN customers c ON c.customer_id = s.customer_id
+JOIN products p ON p.product_id = s.product_id`;
+        }
+        if (tableName === "support_tickets") {
+          return `FROM support_tickets t
+JOIN customers c ON c.customer_id = t.customer_id
+LEFT JOIN products p ON p.product_id = t.product_id`;
+        }
+        if (tableName === "invoices") {
+          return `FROM invoices i
+JOIN customers c ON c.customer_id = i.customer_id`;
+        }
+        if (tableName === "customers") return "FROM customers c";
+        if (tableName === "products") return "FROM products p";
+        if (tableName === "employees") return "FROM employees e";
+        return "";
+      }
+
+      function tableSelectSql(tableName) {
+        if (tableName === "sales_orders") {
+          return `SELECT s.order_id, s.order_date, c.customer_name, p.product_name,
+       s.region, s.channel, s.quantity,
+       ROUND(s.quantity * s.unit_price * (1 - s.discount_pct), 2) AS revenue
+${tableFromSql(tableName)}`;
+        }
+        if (tableName === "support_tickets") {
+          return `SELECT t.ticket_id, t.opened_date, c.customer_name, p.product_name,
+       t.priority, t.status, t.sentiment_score, t.issue_type
+${tableFromSql(tableName)}`;
+        }
+        if (tableName === "invoices") {
+          return `SELECT i.invoice_id, c.customer_name, i.due_date, i.amount, i.status, i.paid_date
+${tableFromSql(tableName)}`;
+        }
+        if (tableName === "customers") return `SELECT c.*\n${tableFromSql(tableName)}`;
+        if (tableName === "products") return `SELECT p.*\n${tableFromSql(tableName)}`;
+        if (tableName === "employees") return `SELECT e.*\n${tableFromSql(tableName)}`;
+        return "";
+      }
+
+      function tableSql(tableName, filters) {
+        const where = filters.length ? `\nWHERE ${filters.map((filter) => filterSql(tableName, filter)).join("\n  AND ")}` : "";
+        return `${tableSelectSql(tableName)}${where}\nLIMIT 25`;
+      }
+
+      function groupField(question, tableName) {
+        const q = normalize(question);
+        const candidates = [
+          ["region", ["customers", "sales_orders", "support_tickets", "invoices", "employees"]],
+          ["segment", ["customers", "sales_orders", "support_tickets", "invoices"]],
+          ["industry", ["customers", "sales_orders", "support_tickets", "invoices"]],
+          ["category", ["products", "sales_orders", "support_tickets"]],
+          ["status", ["support_tickets", "invoices", "employees"]],
+          ["priority", ["support_tickets"]],
+          ["channel", ["sales_orders"]],
+          ["department", ["employees"]]
+        ];
+        const match = candidates.find(([field, tablesForField]) => q.includes(`by ${field}`) && tablesForField.includes(tableName));
+        return match?.[0] || null;
+      }
+
+      function groupValue(tableName, field, row) {
+        if (field === "region") return row.region || customerById[row.customer_id]?.region;
+        if (field === "segment") return row.segment || customerById[row.customer_id]?.segment;
+        if (field === "industry") return row.industry || customerById[row.customer_id]?.industry;
+        if (field === "category") return row.category || productById[row.product_id]?.category;
+        return row[field];
+      }
+
+      function groupSqlExpression(tableName, field) {
+        const alias = {
+          customers: "c",
+          products: "p",
+          sales_orders: "s",
+          support_tickets: "t",
+          invoices: "i",
+          employees: "e"
+        }[tableName];
+        if (["region", "segment", "industry"].includes(field) && ["sales_orders", "support_tickets", "invoices"].includes(tableName)) return `c.${field}`;
+        if (field === "category" && ["sales_orders", "support_tickets"].includes(tableName)) return "p.category";
+        return `${alias}.${field}`;
+      }
+
+      function compileGroupedTableQuery(question, tableName, field) {
+        const filters = buildTableFilters(question, tableName).filter((filter) => filter.kind !== field);
+        const rawRows = (tables[tableName] || []).filter((row) => filters.every((filter) => filter.test(row)));
+        const counts = new Map();
+        rawRows.forEach((row) => {
+          const value = groupValue(tableName, field, row) || "unknown";
+          counts.set(value, (counts.get(value) || 0) + 1);
+        });
+        const rows = Array.from(counts, ([value, row_count]) => ({ [field]: value, row_count })).sort((a, b) => b.row_count - a.row_count);
+        const where = filters.length ? `\nWHERE ${filters.map((filter) => filterSql(tableName, filter)).join("\n  AND ")}` : "";
+        const expression = groupSqlExpression(tableName, field);
+        return {
+          route: `count_${tableName}_by_${field}`,
+          confidence: 0.84,
+          rows,
+          tablesUsed: [tableName],
+          period: hasDateHint(question) ? dateRange(question, "order_date").label : "all visible demo rows",
+          sql: `SELECT ${expression} AS ${field}, COUNT(*) AS row_count
+${tableFromSql(tableName)}${where}
+GROUP BY ${expression}
+ORDER BY row_count DESC`,
+          answer: rows.length ? `Returned ${rows.length} ${field} group(s) for ${tableName}.` : `No matching ${tableName} groups.`
+        };
+      }
+
+      function compileTableQuery(question) {
+        const q = normalize(question);
+        const tableName = detectTableIntent(q);
+        const asksForRows = hasAnyWord(q, ["show", "list", "find", "get", "view", "display", "select", "give"]);
+        const asksForCount = q.includes("count") || q.includes("how many") || q.includes("number of");
+        if (!tableName || (!asksForRows && !asksForCount)) return null;
+
+        const field = groupField(question, tableName);
+        if (asksForCount && field) return compileGroupedTableQuery(question, tableName, field);
+
+        const result = tableRows(tableName, question);
+        return {
+          route: `table_query_${tableName}`,
+          confidence: 0.82,
+          rows: result.rows.slice(0, 25),
+          tablesUsed: [tableName],
+          period: hasDateHint(question) ? buildTableFilters(question, tableName).find((filter) => filter.kind === "date")?.label || "filtered demo rows" : "all visible demo rows",
+          sql: tableSql(tableName, result.filters),
+          answer: result.rows.length ? `Returned ${result.rows.length} matching ${tableName} row(s).` : `No matching ${tableName} rows.`
+        };
+      }
+
+      function unsupportedQuery(question) {
+        return {
+          route: "unsupported_custom_query",
+          confidence: 0,
+          rows: [],
+          tablesUsed: [],
+          period: "not matched",
+          sql: `-- No supported read-only template matched this question.
+-- Supported custom examples:
+--   show customers in South
+--   list critical open tickets
+--   show open invoices
+--   count sales orders by channel
+--   show products in Finance`,
+          answer: `No supported query template matched "${question}".`
+        };
       }
 
       function selectRevenueByRegion(range) {
@@ -1312,7 +1672,7 @@ LIMIT 15`,
           };
         }
 
-        if (q.includes("ticket")) {
+        if (q.includes("ticket") && (q.includes(" by ") || q.includes("summary") || q.includes("count"))) {
           const rows = selectTicketsByStatusPriority(ticketDate, question);
           const openClause = q.includes("open") ? "\n  AND status != 'closed'" : "";
           return {
@@ -1330,7 +1690,7 @@ ORDER BY ticket_count DESC`,
           };
         }
 
-        if (q.includes("attrition") || (q.includes("employee") && (q.includes("left") || q.includes("turnover")))) {
+        if (q.includes("attrition") || q.includes("turnover") || (q.includes("employee") && q.includes("left") && q.includes("department"))) {
           const rows = selectAttrition();
           return {
             route: "attrition_by_department",
@@ -1347,7 +1707,7 @@ ORDER BY employees_left DESC`,
           };
         }
 
-        if (q.includes("overdue") || (q.includes("invoice") && q.includes("open"))) {
+        if (q.includes("overdue")) {
           const rows = selectOverdueInvoices(question);
           return {
             route: "overdue_invoices",
@@ -1369,22 +1729,29 @@ LIMIT 15`,
           };
         }
 
-        const rows = selectMonthlyRevenue(salesDate);
-        return {
-          route: "monthly_revenue_trend",
-          confidence: 0.9,
-          rows,
-          tablesUsed: ["sales_orders"],
-          period: salesDate.label,
-          sql: `SELECT SUBSTR(order_date, 1, 7) AS month,
+        if (q.includes("monthly") || q.includes("trend")) {
+          const rows = selectMonthlyRevenue(salesDate);
+          return {
+            route: "monthly_revenue_trend",
+            confidence: 0.9,
+            rows,
+            tablesUsed: ["sales_orders"],
+            period: salesDate.label,
+            sql: `SELECT SUBSTR(order_date, 1, 7) AS month,
        ROUND(SUM(quantity * unit_price * (1 - discount_pct)), 2) AS revenue,
        COUNT(*) AS order_count
 FROM sales_orders
 WHERE ${salesDate.sql}
 GROUP BY month
 ORDER BY month`,
-          answer: `Returned ${rows.length} monthly revenue point(s).`
-        };
+            answer: `Returned ${rows.length} monthly revenue point(s).`
+          };
+        }
+
+        const tableResult = compileTableQuery(question);
+        if (tableResult) return tableResult;
+
+        return unsupportedQuery(question);
       }
 
       function renderChart(rows) {
