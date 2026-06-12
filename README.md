@@ -21,6 +21,9 @@ an experimental SLM training path for learning schema and question patterns.
 - Experimental SLM training and inference path for schema-aware text-to-SQL
 - Public portfolio and GitHub links in the application header
 
+Product discovery document:
+[docs/product-discovery-document.md](docs/product-discovery-document.md)
+
 ## DataTalk-SLM Architecture
 
 The SLM path is designed to specialize a compact model on schema, glossary, and
