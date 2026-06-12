@@ -4,6 +4,48 @@ DataTalk is a portfolio project for natural-language querying over company data.
 It uses a constrained intent/slot compiler for reliable supported queries, plus
 an experimental SLM training path for learning schema and question patterns.
 
+**Live demo:** https://darshdevlab.github.io/DataTalk/
+
+![DataTalk schema explorer](docs/assets/datatalk-schema-view.png)
+
+## What We Implemented
+
+- Static GitHub Pages application with left-side workspace navigation
+- Visual schema/data explorer with ERD-style table relationships
+- Chat-style natural-language query interface with processing state
+- Query history persistence in the browser for one active chat
+- Clear Chat action that resets both visible and saved chat history
+- Deterministic intent/slot compiler for supported company and LMS queries
+- SQL preview, source rows, and visual checks for answer verification
+- Read-only SQL validation boundary with no browser secrets
+- Experimental SLM training and inference path for schema-aware text-to-SQL
+- Public portfolio and GitHub links in the application header
+
+## DataTalk-SLM Architecture
+
+The SLM path is designed to specialize a compact model on schema, glossary, and
+question-to-SQL patterns, while final correctness is still enforced by SQL
+validation and source-row inspection.
+
+![DataTalk SLM architecture](docs/assets/datatalk-slm-architecture.png)
+
+## Application Views
+
+### Schema & Data
+
+The schema view exposes the demo tables, typed columns, relationship map,
+business glossary, and sample rows so users can verify what the query engine can
+answer.
+
+![DataTalk schema and data view](docs/assets/datatalk-schema-view.png)
+
+### Data Chat
+
+The chat view lets users ask natural-language questions, see the compiled SQL,
+inspect result rows, and keep the current chat across refreshes.
+
+![DataTalk data chat view](docs/assets/datatalk-chat-view.png)
+
 ## Why Train A Small Model
 
 A generic LLM/RAG approach often sends the full schema, business definitions,
@@ -20,19 +62,6 @@ The model should not memorize live business facts. The ML path is meant to learn
 
 Correctness comes from compiled/read-only SQL, execution against the database,
 and visible source rows.
-
-## Current V1
-
-- Synthetic SQLite company database
-- Business glossary and schema context
-- Intent/slot SQL compiler for supported company and LMS query families
-- Text-to-SQL training data generator
-- Fine-tuning script for small T5-style models
-- Read-only SQL guard
-- CLI query runner
-- Compiler evaluator
-- Latency benchmark
-- Dependency-light local web UI
 
 ## Quick Start
 
