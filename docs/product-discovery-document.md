@@ -4,256 +4,173 @@
 
 **DataTalk: Schema-Aware Natural-Language Data Copilot for Business Teams**
 
-DataTalk helps non-technical and semi-technical teams ask questions over
-enterprise data, inspect the generated SQL, and verify answers through visible
-source rows. The product direction combines a visual schema explorer, a
-chat-style query interface, deterministic SQL validation, and a future
-schema-specialized small language model.
+DataTalk helps non-technical and semi-technical business users ask questions over company data using natural language, inspect the schema visually, verify generated SQL, and trust answers through visible source rows.
 
 ## 2. User Personas
 
-### Persona 1: Product Manager
+### Persona 1: Riya Shah
 
-**Profile:** A product manager working in an IT or SaaS company who needs fast
-answers from customer, product, support, billing, and usage data.
+| Field | Detail |
+|---|---|
+| Name | Riya Shah |
+| Occupation | Product Manager |
+| Age | 32 |
+| Experience | 7 years in B2B SaaS product management and analytics workflows |
+| Behaviour | Asks cross-functional questions across product, sales, customer support, billing, and risk data. Uses dashboards first, then asks analysts when the dashboard does not answer follow-up questions. Prefers fast experiments, clear evidence, and reusable insights. |
+| Pain points | Does not always know table names or relationships. Waits on analysts for ad hoc SQL. Loses time validating whether an answer came from the correct dataset. Needs quick follow-up questions during planning and review meetings. |
 
-**Goals:**
+### Persona 2: Arjun Mehta
 
-- Understand feature adoption, revenue movement, churn signals, and support
-  pressure without waiting for analysts.
-- Prepare product reviews, roadmap decisions, and leadership updates.
-- Connect customer feedback, sales movement, product usage, and support tickets.
+| Field | Detail |
+|---|---|
+| Name | Arjun Mehta |
+| Occupation | Risk Team Analyst |
+| Age | 35 |
+| Experience | 9 years in operational risk, audit reporting, compliance checks, and exception analysis |
+| Behaviour | Reviews suspicious accounts, overdue invoices, open tickets, churn signals, and customer risk patterns. Works carefully and validates every number before sharing it. Uses structured reports but often needs deeper drilldowns. |
+| Pain points | Manual data checks are slow. Risk questions usually need joins across customers, invoices, tickets, and orders. Generic AI tools can hallucinate SQL. Audit work requires traceable source rows, not only summarized answers. |
 
-**Current behavior:**
+### Persona 3: Neha Kapoor
 
-- Asks data analysts or engineers for SQL extracts.
-- Checks dashboards that often do not answer the exact question.
-- Copies numbers from multiple tools into product docs or slides.
+| Field | Detail |
+|---|---|
+| Name | Neha Kapoor |
+| Occupation | Sales Team Lead |
+| Age | 29 |
+| Experience | 6 years in enterprise sales, customer growth, and revenue operations |
+| Behaviour | Looks for high-value customers, regional performance, product revenue, overdue invoices, and account health. Needs quick answers before pipeline reviews and customer calls. Prefers simple language and visual output over raw SQL. |
+| Pain points | Depends on RevOps or analysts for custom customer lists. Dashboard filters do not cover every selling question. Cannot easily connect revenue, support, and billing signals. Needs confidence that a generated list is current and accurate. |
 
-**Success criteria:**
+## 3. Selected Person
 
-- Can ask a question in natural language and get verified SQL-backed results.
-- Can inspect which tables and rows produced the answer.
-- Can reuse the result in product planning or stakeholder discussions.
+**Selected person: Riya Shah, Product Manager**
 
-### Persona 2: Risk Team Analyst
+### Why?
 
-**Profile:** A risk or compliance team member who monitors business exposure,
-operational risk, delayed payments, suspicious patterns, and policy exceptions.
+Riya is the strongest starting persona because Product Managers sit between product, sales, support, billing, and leadership. Their questions naturally span the same tables DataTalk supports: customers, products, sales orders, support tickets, invoices, and employees.
 
-**Goals:**
+This persona also exposes the most important product risks early:
 
-- Identify risk signals quickly across customers, invoices, support tickets, and
-  usage events.
-- Validate answers before escalation.
-- Maintain auditability and avoid unsafe write operations.
+| Reason | Why It Matters |
+|---|---|
+| Cross-functional data needs | Product Managers ask questions across multiple teams, so schema awareness and table relationships become essential. |
+| High follow-up frequency | PMs rarely stop at one query. They ask follow-up questions during planning, review, and prioritization. |
+| Trust requirement | PM decisions affect roadmap and customer commitments, so answers must show SQL, source rows, and confidence. |
+| Clear demo value | A PM can easily understand the benefit of natural-language query, visual schema, and grounded results in one workflow. |
 
-**Current behavior:**
+## 4. Journey Map
 
-- Depends on scheduled reports or spreadsheet exports.
-- Requests custom SQL when a new risk question appears.
-- Cross-checks multiple systems manually before raising a case.
-
-**Success criteria:**
-
-- Can ask read-only risk questions safely.
-- Can see SQL, source rows, and table lineage.
-- Can trust that the system does not expose secrets or modify data.
-
-### Persona 3: Sales Team Lead
-
-**Profile:** A sales manager or revenue operations user who needs quick insight
-into customers, product revenue, open invoices, deal health, and account risk.
-
-**Goals:**
-
-- Find top customers, revenue by region, product performance, and overdue
-  invoices.
-- Prepare account reviews without waiting for data exports.
-- Spot churn risk before renewal or expansion conversations.
-
-**Current behavior:**
-
-- Uses CRM dashboards but lacks deeper joined data.
-- Asks finance, product, or support for additional context.
-- Builds manual spreadsheet summaries for weekly reviews.
-
-**Success criteria:**
-
-- Can ask revenue and account questions directly.
-- Can verify the answer with rows and SQL.
-- Can move faster in sales reviews and customer planning.
-
-## 3. Selected Persona
-
-**Selected persona: Product Manager**
-
-### Justification
-
-The product manager is the best primary persona because this role sits between
-engineering, sales, support, finance, and leadership. Product managers ask broad
-cross-functional questions that require joined context across multiple tables:
-customers, products, revenue, support tickets, invoices, and usage events. This
-matches DataTalk's strongest value proposition: turning schema-aware business
-questions into safe SQL-backed answers with visible evidence.
-
-The product manager also benefits from every major product capability:
-
-- Schema view to understand what data exists.
-- Chat query interface to ask ad hoc questions.
-- SQL preview to trust the generated result.
-- Source rows to defend decisions in reviews.
-- Future SLM path to reduce context size and improve query speed.
-
-## 4. Journey Map With Pain Points
-
-| Journey Stage | User Action | Current Experience | Pain Point |
-|---|---|---|---|
-| 1. Define question | PM frames a product or business question | Question is often vague or crosses multiple data domains | Unsure which tables or metrics are available |
-| 2. Find data source | PM checks dashboards, CRM, support tools, or asks analyst | Data is fragmented across tools | Too much time spent locating trusted data |
-| 3. Request query | PM asks analyst or engineer for custom SQL | Request enters backlog or Slack thread | Slow turnaround for simple questions |
-| 4. Interpret result | PM receives table, chart, or spreadsheet | Query logic is often hidden | Low confidence in result correctness |
-| 5. Validate answer | PM asks follow-up questions or checks raw rows | Verification requires another request | Hard to trace answer back to source rows |
-| 6. Share decision | PM prepares roadmap, review, or stakeholder summary | Numbers are manually copied into docs | Risk of stale or inconsistent data |
-| 7. Ask follow-up | PM changes filter, time period, or metric | New question restarts the cycle | Iteration is slow and dependency-heavy |
+| Journey Stage | Actions | Emotion With Emoji | Pain Points | Opportunities |
+|---|---|---|---|---|
+| 1. Frame business question | Riya asks, "Which South region customers have open issues and revenue impact?" | Curious 🙂 | Question is clear in business language but not in SQL. | Let the user start from natural language without knowing schema names. |
+| 2. Check schema and data | Opens schema view to understand available tables, fields, and relationships. | Confused 😕 | Table relationships and foreign keys are hard to remember. | Show a visual HLD schema map with clickable table data. |
+| 3. Ask natural-language query | Types the question in the chat interface and submits it. | Hopeful 🙂 | Generic AI may misunderstand intent or invent unavailable columns. | Use schema-aware query compilation with supported query families. |
+| 4. Wait for processing | Watches the app process the query, generate SQL, and prepare rows. | Impatient 😣 | Waiting without feedback feels broken and reduces confidence. | Show a clear processing state before SQL and results appear. |
+| 5. Review SQL and results | Reads the compiled SQL, answer summary, confidence, and source rows. | Cautious 🤔 | A result without evidence cannot be trusted in business meetings. | Display generated SQL, route, confidence, latency, and visible source rows. |
+| 6. Validate the answer | Compares result rows with schema view and sample data. | Confident 🙂 | Switching between tools makes validation slower. | Keep schema, data, and chat in one workspace. |
+| 7. Ask follow-up question | Modifies the question to filter by region, product, status, or period. | Motivated 🚀 | Small wording changes can fail if the parser is too rigid. | Improve query coverage and preserve chat context within the current session. |
 
 ## 5. Pain Points
 
-1. **Data dependency:** Product managers depend on analysts or engineers for
-   custom questions.
-2. **Schema uncertainty:** Users do not know which tables, columns, or
-   relationships are available.
-3. **Slow iteration:** Follow-up questions take too long because every change
-   may need a new SQL request.
-4. **Low trust:** Dashboards show answers but not the SQL or source rows behind
-   the answer.
-5. **Context switching:** Users move between dashboards, spreadsheets, Slack,
-   CRM, support tools, and docs.
-6. **Unsafe generic AI risk:** Generic LLM answers can hallucinate schema,
-   invent metrics, or produce unsafe SQL.
-7. **Poor reuse:** Good queries are not stored as reusable business patterns.
+| ID | Pain Point | Description |
+|---|---|---|
+| P1 | Schema uncertainty | Users do not know exact table names, column names, or table relationships. |
+| P2 | Slow follow-up iteration | Users need many variations of a question, but each manual SQL request takes time. |
+| P3 | Analyst dependency | Business users depend on analysts for ad hoc queries and joined datasets. |
+| P4 | Low trust in generated answers | Users need proof through SQL, source rows, and visible data lineage. |
+| P5 | Context switching | Users move between dashboards, spreadsheets, SQL tools, and chat tools. |
+| P6 | Unsafe or hallucinated SQL | Generic language models can produce invalid columns, wrong joins, or unsupported queries. |
+| P7 | Poor query reuse | Good ad hoc questions are often lost after a meeting or one-time analysis. |
 
-## 6. Pain Point Prioritization: Time vs Effort Matrix
+## 6. Pain Point Time vs Effort Scoring Matrix
 
-| Priority | Pain Point | User Time Lost | Effort To Solve | Reason |
-|---|---|---:|---:|---|
-| P1 | Slow iteration on follow-up questions | High | Medium | Directly blocks daily PM work and can be improved with chat + compiler |
-| P1 | Low trust in generated or dashboard answers | High | Medium | SQL preview and source rows create immediate confidence |
-| P1 | Schema uncertainty | Medium | Low | Visual schema explorer and sample rows are feasible and high value |
-| P2 | Data dependency on analysts | High | High | Requires broader query coverage and governance |
-| P2 | Generic AI hallucination risk | High | High | Needs SQL guard, schema grounding, and evaluation |
-| P3 | Context switching across tools | Medium | High | Requires integrations beyond the demo scope |
-| P3 | Poor query reuse | Medium | Medium | Needs saved queries, team workspaces, and permissions |
+Scoring method:
 
-### Matrix Interpretation
+- There are **7 pain points**, so each score uses **1 to 7 points**.
+- **User Impact:** 7 = highest impact, 1 = lowest impact.
+- **Time Lost:** 7 = most time lost, 1 = least time lost.
+- **Effort Feasibility:** 7 = easiest to solve, 1 = hardest to solve.
+- **Total Score = User Impact + Time Lost + Effort Feasibility**.
+- Highest total score is prioritized first.
 
-| Effort / Time Lost | Low Time Lost | Medium Time Lost | High Time Lost |
-|---|---|---|---|
-| Low Effort | Improve labels and examples | Visual schema explorer | Schema search and glossary |
-| Medium Effort | Saved prompt examples | Query history and source rows | Chat-based SQL compiler |
-| High Effort | Team query library | Tool integrations | Full governed SLM data copilot |
+| Rank | Pain Point | User Impact (1-7) | Time Lost (1-7) | Effort Feasibility (1-7) | Total Score | Decision |
+|---:|---|---:|---:|---:|---:|---|
+| 1 | P2 - Slow follow-up iteration | 7 | 7 | 5 | 19 | Select |
+| 2 | P4 - Low trust in generated answers | 6 | 6 | 6 | 18 | Select |
+| 3 | P1 - Schema uncertainty | 5 | 5 | 7 | 17 | Select |
+| 4 | P3 - Analyst dependency | 7 | 7 | 2 | 16 | Later |
+| 5 | P6 - Unsafe or hallucinated SQL | 6 | 5 | 4 | 15 | Later |
+| 6 | P5 - Context switching | 4 | 4 | 3 | 11 | Later |
+| 7 | P7 - Poor query reuse | 3 | 3 | 4 | 10 | Later |
+
+**Selected pain points:** P2, P4, and P1.
+
+These pain points are selected because they combine strong user impact, high time loss, and practical implementation feasibility in the current DataTalk product.
 
 ## 7. Solution Ideas
 
 ### 3 OK Ideas
 
-1. **Static data dictionary**
-   - A searchable page showing tables, columns, and definitions.
-   - Useful but does not answer questions directly.
-
-2. **Prebuilt dashboard templates**
-   - Fixed dashboards for revenue, customers, tickets, invoices, and products.
-   - Fast for known questions but weak for ad hoc exploration.
-
-3. **Analyst request form**
-   - Structured form for PMs to request SQL or reports.
-   - Improves intake but still keeps users dependent on analysts.
+| Idea | Description | Limitation |
+|---|---|---|
+| Static data dictionary | Publish table names, fields, and example questions in a documentation page. | Helps understanding but does not answer questions directly. |
+| Prebuilt dashboard templates | Build fixed charts for common sales, support, and billing questions. | Useful for repeated reporting, weak for ad hoc questions. |
+| Analyst request form | Let users submit structured data requests to analysts. | Organizes requests but still creates waiting time and dependency. |
 
 ### 3 Best Ideas
 
-1. **Schema-aware chat-to-SQL assistant**
-   - User asks a business question.
-   - System compiles SQL, validates it, and returns rows with explanation.
-
-2. **Visual schema explorer with sample rows**
-   - Users inspect tables and relationships before asking questions.
-   - Improves trust and reduces schema confusion.
-
-3. **Verified answer view**
-   - Every answer includes SQL, source rows, lineage, and confidence.
-   - Reduces hallucination risk and supports stakeholder communication.
+| Idea | Description | Benefit |
+|---|---|---|
+| Schema-aware chat-to-SQL assistant | Convert natural language into safe SQL using known schema and allowed query families. | Reduces follow-up time and analyst dependency. |
+| Visual schema explorer with source rows | Show HLD table relationships, clickable tables, and sample rows. | Reduces schema uncertainty and improves self-service validation. |
+| Verified answer panel | Show answer summary, compiled SQL, confidence, route, latency, and source rows. | Builds trust and makes AI output reviewable. |
 
 ### 3 Moonshot Ideas
 
-1. **DataTalk-SLM: company-specific small language model**
-   - Fine-tune a compact model on schema, glossary, and question-to-SQL
-     examples.
-   - Goal: faster inference, smaller context, and better domain alignment.
+| Idea | Description | Expected Advantage |
+|---|---|---|
+| DataTalk-SLM | Train a company-specific small language model for schema-grounded business querying. | Faster, cheaper, and more controlled than relying only on a large generic model. |
+| Governed multi-system enterprise copilot | Connect CRM, billing, support, product analytics, and warehouse data with permission-aware answers. | Turns DataTalk into an enterprise-wide decision assistant. |
+| Autonomous business insight agent | Proactively detects anomalies, risks, churn signals, and revenue opportunities without waiting for prompts. | Moves from query answering to automatic business intelligence. |
 
-2. **Autonomous business insight agent**
-   - Monitors data changes and proactively suggests product, risk, and sales
-     insights.
-   - Example: "Support tickets for Product A increased after the latest release."
+## 8. Moonshot Time vs Effort Scoring Matrix
 
-3. **Governed multi-system enterprise copilot**
-   - Connects CRM, support, billing, analytics, and warehouse data with access
-     control, audit logs, and approved query policies.
-   - Designed for production enterprise usage.
+Scoring method:
 
-## 8. Moonshot Prioritization: Time vs Effort
+- There are **3 moonshot ideas**, so each score uses **1 to 3 points**.
+- **User Value:** 3 = highest value, 1 = lowest value.
+- **Time To Value:** 3 = fastest to validate, 1 = slowest to validate.
+- **Effort Feasibility:** 3 = easiest to build, 1 = hardest to build.
+- **Total Score = User Value + Time To Value + Effort Feasibility**.
+- Highest total score is selected.
 
-| Moonshot Idea | Time To Value | Build Effort | Risk | Priority |
-|---|---:|---:|---:|---|
-| DataTalk-SLM company-specific model | Medium | High | Medium | 1 |
-| Governed multi-system enterprise copilot | Long | Very High | High | 2 |
-| Autonomous business insight agent | Long | Very High | Very High | 3 |
-
-### Moonshot Matrix
-
-| Effort / Time To Value | Short Time | Medium Time | Long Time |
-|---|---|---|---|
-| Medium Effort | Not applicable | Expand deterministic compiler | Not applicable |
-| High Effort | Not applicable | **DataTalk-SLM** | Governed enterprise copilot |
-| Very High Effort | Not applicable | Not applicable | Autonomous insight agent |
+| Rank | Moonshot Idea | User Value (1-3) | Time To Value (1-3) | Effort Feasibility (1-3) | Total Score | Decision |
+|---:|---|---:|---:|---:|---:|---|
+| 1 | DataTalk-SLM | 3 | 2 | 2 | 7 | Selected |
+| 2 | Governed multi-system enterprise copilot | 3 | 1 | 1 | 5 | Next |
+| 3 | Autonomous business insight agent | 2 | 1 | 1 | 4 | Later |
 
 ## 9. Selected Idea
 
-**Selected idea: DataTalk-SLM, a schema-aware small language model with SQL
-validation and source-row verification.**
+**Selected idea: DataTalk-SLM, a schema-aware small language model with deterministic SQL validation and source-row verification.**
 
-### Why This Idea Is Selected
+DataTalk-SLM is selected because it directly addresses the top-ranked pain points:
 
-DataTalk-SLM is the right selected idea because it balances ambition with a
-realistic product path. It keeps the current reliable compiler and SQL guard,
-then adds a specialized model that can learn schema vocabulary, business terms,
-and common question-to-SQL patterns. This direction supports the selected
-persona, the product manager, because it helps them ask faster cross-functional
-questions without losing trust or explainability.
-
-### Selected Solution Scope
-
-- Visual schema explorer for table and relationship understanding.
-- Chat interface for natural-language questions.
-- Static compiler for high-confidence supported query families.
-- SQL guard for read-only validation.
-- Source rows and SQL preview for verification.
-- Browser chat history for one active conversation.
-- Future SLM fine-tuning path for faster schema-aware query generation.
-
-### Success Metrics
-
-| Metric | Target |
+| Selected Pain Point | How DataTalk-SLM Solves It |
 |---|---|
-| Time to first answer | Under 5 seconds for supported demo queries |
-| Query explainability | 100% of answers show SQL and source rows |
-| Supported query coverage | Revenue, customers, products, tickets, invoices, employees, and LMS examples |
-| Safety | Only read-only SQL is allowed |
-| User confidence | Users can verify table lineage and row-level evidence |
+| P2 - Slow follow-up iteration | Users can ask and refine questions in chat without waiting for manual SQL support. |
+| P4 - Low trust in generated answers | The product shows compiled SQL, confidence, route, latency, and source rows. |
+| P1 - Schema uncertainty | The model and UI are grounded in known tables, columns, relationships, and supported query families. |
+
+The selected solution is practical because the current DataTalk implementation already includes:
+
+- A visual schema and data page.
+- A chat-style natural-language query interface.
+- Static compiler mode for safe demo queries.
+- SQL display and source-row verification.
+- Public GitHub Pages deployment without browser-side secrets.
+- A path to connect a trained SLM model API later without exposing train, validation, or test data.
 
 ## 10. Final Product Statement
 
-DataTalk will help product managers and business teams ask questions over
-company data using natural language, inspect exactly how answers were produced,
-and make faster decisions without waiting for every SQL request. The selected
-direction is a schema-aware SLM data copilot with deterministic safety checks,
-visible source rows, and a product-grade UI for schema exploration and chat.
+DataTalk is a schema-aware data copilot that helps business teams move from natural-language questions to verified SQL-backed answers. The selected product direction is to evolve the current demo into DataTalk-SLM: a company-specific small language model trained for fast, grounded, and trustworthy business querying.
